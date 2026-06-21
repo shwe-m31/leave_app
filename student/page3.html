@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Leave Request Portal</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: linear-gradient(to right, #4A90E2, #9013FE);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+
+        .container {
+            background: linear-gradient(to right, #4A90E2, #9013FE);
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            width: 300px;
+            text-align: center;
+        }
+
+        h2 {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin: 10px 0 5px;
+            text-align: left;
+        }
+
+        input, textarea {
+            width: 100%;
+            padding: 8px;
+            margin-bottom: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+
+        button {
+            background-color: blue;
+            color: white;
+            border: none;
+            padding: 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            width: 100%;
+        }
+
+        button:hover {
+            background-color:grey;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>Leave Request Form</h2>
+        <form id="leaveForm">  <!-- Added id="leaveForm" -->
+            <label for="fromDate">From Date & Time:</label>
+            <input type="datetime-local" id="fromDate" name="fromDate" required>
+
+            <label for="toDate">To Date & Time:</label>
+            <input type="datetime-local" id="toDate" name="toDate" required>
+
+            <label for="reason">Reason:</label>
+            <textarea id="reason" name="reason" rows="4" required></textarea>
+
+            <button type="submit">Submit Request</button>
+        </form>
+    </div>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            // Ensure the form exists before adding event listener
+            const form = document.getElementById("leaveForm");
+            if (!form) {
+                console.error("Error: Form with id 'leaveForm' not found!");
+                return;
+            }
+    
+            form.addEventListener("submit", async function (event) {
+                event.preventDefault(); // Prevent default form submission
+    
+                const fromDate = document.getElementById("fromDate").value;
+                const toDate = document.getElementById("toDate").value;
+                const reason = document.getElementById("reason").value;
+    
+                // Ensure fields are not empty before making a request
+                if (!fromDate || !toDate || !reason) {
+                    alert("Please fill all fields before submitting.");
+                    return;
+                }
+    
+                const requestData = {
+                    stud_id: "222IT211", // Replace with dynamic student ID if needed
+                    from_date: fromDate, // ✅ Ensure field name matches backend
+                    to_date: toDate,     // ✅ Ensure field name matches backend
+                    reason: reason,
+                    status: "Pending"
+                };
+    
+                // Debugging output
+                console.log("Sending Request Data:", requestData);
+    
+                try {
+                    const response = await fetch("http://localhost:3001/api/submit-leave", {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify(requestData)
+                    });
+    
+                    if (!response.ok) {
+                        throw new Error("Server error: " + response.status);
+                    }
+    
+                    const data = await response.json();
+                    console.log("Response:", data);
+                    alert(data.message); // Show success message
+                } catch (error) {
+                    console.error("Error submitting leave request:", error);
+                    alert("Failed to submit request. Please try again.");
+                }
+            });
+        });
+    </script>
+    
+</body>
+</html>

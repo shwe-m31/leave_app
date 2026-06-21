@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Details</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .student-table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        th, td {
+            padding: 15px;
+            text-align: center;
+            border-bottom: 1px solid #ddd;
+        }
+
+        th {
+            background-color: #4A90E2;
+            color: white;
+        }
+
+        tr:hover {
+            background-color: #f1f1f1;
+        }
+
+        /* Responsive Table */
+        @media (max-width: 768px) {
+            table, thead, tbody, th, td, tr {
+                display: block;
+            }
+
+            thead tr {
+                display: none; 
+            }
+
+            tr {
+                margin-bottom: 10px;
+                border: 1px solid #ddd;
+            }
+
+            td {
+                display: flex;
+                justify-content: space-between;
+                padding: 10px;
+                text-align: left;
+            }
+
+            td::before {
+                content: attr(data-label);
+                font-weight: bold;
+                text-transform: uppercase;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <h2 style="text-align: center;">Student Details</h2>
+
+    <table class="student-table">
+        <thead>
+            <tr>
+                <th>Student Name</th>
+                <th>Department</th>
+                <th>Email ID</th>
+                <th>Attendance %</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td data-label="Student Name">John Doe</td>
+                <td data-label="Department">Computer Science</td>
+                <td data-label="Email ID">john.doe@example.com</td>
+                <td data-label="Attendance %">95%</td>
+            </tr>
+            <tr>
+                <td data-label="Student Name">Jane Smith</td>
+                <td data-label="Department">Mechanical Engineering</td>
+                <td data-label="Email ID">jane.smith@example.com</td>
+                <td data-label="Attendance %">88%</td>
+            </tr>
+            <tr>
+                <td data-label="Student Name">Mike Johnson</td>
+                <td data-label="Department">Electrical Engineering</td>
+                <td data-label="Email ID">mike.johnson@example.com</td>
+                <td data-label="Attendance %">92%</td>
+            </tr>
+            <tr>
+                <td data-label="Student Name">Emily Davis</td>
+                <td data-label="Department">Civil Engineering</td>
+                <td data-label="Email ID">emily.davis@example.com</td>
+                <td data-label="Attendance %">89%</td>
+            </tr>
+        </tbody>
+    </table>
+
+</body>
+</html>

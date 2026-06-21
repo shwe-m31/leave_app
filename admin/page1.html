@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Leave Approval</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background: linear-gradient(to right, #4A90E2, #9013FE);
+        }
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding:20px;
+        }
+    .container {
+            width: 80%;
+            margin: 20px auto;
+        }
+        .card {
+            background: white;
+            padding: 15px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            flex: 1;
+            width:250px;
+            margin: 20px;
+            display:inline-block;
+            font-size: 16px;
+        }
+        .leave-request {
+            background-color: lightblue;
+            padding: 20px;
+            margin-bottom: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        .leave-request h2 {
+            margin-top: 0;
+        }
+
+        .leave-details {
+            margin-bottom: 20px;
+        }
+
+        .leave-details label {
+            font-weight: bold;
+        }
+
+        .buttons {
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .buttons button {
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            border: none;
+            border-radius: 5px;
+        }
+
+        .approve {
+            background-color:purple;
+            color: white;
+        }
+
+        .reject {
+            background-color: #f44336;
+            color: white;
+        }
+
+        .leave-request-list {
+            margin-top: 40px;
+        }
+
+        .leave-request-list table {
+            background-color: linear-gradient(to right, #4A90E2, #9013FE);
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .leave-request-list table, th, td {
+            border: 1px solid #ddd;
+        }
+
+        .leave-request-list th, td {
+            padding: 12px;
+            text-align: center;
+        }
+
+        .leave-request-list th {
+            background-color:linear-gradient(to right, #4A90E2, #9013FE);
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="header">
+        <h1>Welcome Back, James</h1>
+        <nav>
+        <a href="details.html">Students</a>
+        <a href="../student/calendar.html">Academic Calendar</a>
+        </nav>
+
+    </div>
+    <div class="container">
+
+    <div class="dashboard-cards">
+        <div class="card">
+            <p>Total Students</p>
+            <h2>1,428</h2>
+        </div>
+        <div class="card">
+            <p>Total Academic Semester Days</p>
+            <h2>180 Days</h2>
+        </div>
+        <div class="card">
+            <p>Total Working Days</p>
+            <h2>120 Days</h2>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="leave-request">
+            <h2>Leave Request Details</h2>
+
+            <div class="leave-details">
+                <label for="employeeName">Employee Name:</label>
+                <span id="employeeName">John Doe</span>
+            </div>
+
+            <div class="leave-details">
+                <label for="leaveStartDate">Leave Start Date:</label>
+                <span id="leaveStartDate">2025-03-10</span>
+            </div>
+
+            <div class="leave-details">
+                <label for="leaveEndDate">Leave End Date:</label>
+                <span id="leaveEndDate">2025-03-15</span>
+            </div>
+
+            <div class="leave-details">
+                <label for="leaveReason">Leave Reason:</label>
+                <span id="leaveReason">Personal reason</span>
+            </div>
+
+            <div class="buttons">
+                <button class="approve" id="approveBtn">Approve</button>
+                <button class="reject" id="rejectBtn">Reject</button>
+            </div>
+        </div>
+
+        <div class="leave-request-list">
+            <h3>All Pending Leave Requests</h3>
+            <table border="1">
+                <thead>
+                    <tr>
+                        <th>Student ID</th>
+                        <th>From Date</th>
+                        <th>To Date</th>
+                        <th>Reason</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="leaveRequestsTableBody"></tbody>
+            </table>
+        </div>
+    </div>
+
+    <script>
+        // Fetch leave requests from the backend
+        async function fetchLeaveRequests() {
+    try {
+        const response = await fetch("http://localhost:3001/api/leave-requests");
+        if (!response.ok) {
+            throw new Error("Server error: " + response.status);
+        }
+        const leaveRequests = await response.json();
+        console.log("Fetched leave requests:", leaveRequests);
+        updateAdminTable(leaveRequests); // Update table
+    } catch (error) {
+        console.error("Error fetching leave requests:", error);
+    }
+}
+    
+        // Function to display leave requests in the table
+        function displayLeaveRequests(data) {
+            const tableBody = document.getElementById("leaveRequestsBody");
+            if (!tableBody) {
+                console.error("Error: Table body with id 'leaveRequestsBody' not found!");
+                return;
+            }
+    
+            tableBody.innerHTML = ""; // Clear existing rows
+    
+            data.forEach(request => {
+                const row = document.createElement("tr");
+                row.innerHTML = `
+                    <td>${request.stud_id || "N/A"}</td>
+                    <td>${request.from_date || "N/A"}</td>
+                    <td>${request.to_date || "N/A"}</td>
+                    <td>${request.status || "N/A"}</td>
+                    <td>
+                        <button class="approve" onclick="updateLeaveStatus(${request.id}, 'Approved')">Approve</button>
+                        <button class="reject" onclick="updateLeaveStatus(${request.id}, 'Rejected')">Reject</button>
+                    </td>
+                `;
+                tableBody.appendChild(row);
+            });
+        }
+    
+        // Function to update leave request status
+        async function updateLeaveStatus(id, status) {
+            try {
+                const response = await fetch("http://localhost:3001/api/update-leave-status", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ id, status })
+                });
+    
+                const data = await response.json();
+                alert(data.message);
+                fetchLeaveRequests(); // Refresh the list after update
+            } catch (error) {
+                console.error("Error updating leave status:", error);
+            }
+        }
+
+        async function fetchLeaveRequests() {
+    try {
+        const response = await fetch("http://localhost:3001/api/leave-requests");
+        const leaveRequests = await response.json();
+        updateAdminTable(leaveRequests); // ✅ This will populate the table
+    } catch (error) {
+        console.error("Error fetching leave requests:", error);
+    }
+}
+
+        function updateAdminTable(leaveRequests) {
+    const tableBody = document.getElementById("leaveRequestsTableBody");
+
+    if (!tableBody) {
+        console.error("Table body not found!");
+        return;
+    }
+
+    tableBody.innerHTML = ""; // Clear previous rows
+
+    leaveRequests.forEach((request) => {
+        const row = document.createElement("tr");
+
+        row.innerHTML = `
+            <td>${request.id}</td>
+            <td>${request.stud_id}</td>
+            <td>${request.from_date}</td>
+            <td>${request.to_date}</td>
+            <td>${request.reason}</td>
+            <td>${request.status}</td>
+            <td>
+                <button onclick="updateLeaveStatus(${request.id}, 'Approved')">Approve</button>
+                <button onclick="updateLeaveStatus(${request.id}, 'Rejected')">Reject</button>
+            </td>
+        `;
+
+        tableBody.appendChild(row);
+    });
+}
+
+    
+        // Load leave requests when the page loads
+        document.addEventListener("DOMContentLoaded", fetchLeaveRequests);
+    </script>
+
+</body>
+
+</html>

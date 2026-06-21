@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Portal</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background: linear-gradient(to right, #4A90E2, #9013FE);
+            animation: fadeIn 1s ease-in-out;
+        }
+        .container {
+            max-width: 900px;
+            margin: auto;
+            background: linear-gradient(to right, #4A90E2, #9013FE);
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            transform: translateY(20px);
+            opacity: 0;
+            animation: slideUp 1s ease-out forwards;
+        }
+        
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        .box {
+            background: #e3e3e3;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 5px;
+            opacity: 0;
+            animation: fadeIn 1s ease-in-out forwards;
+            animation-delay: 0.5s;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+        table, th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+        }
+        th {
+            background: blue;
+            color: white;
+        }
+        .btn {
+            background: blue;
+            color: white;
+            padding: 10px;
+            border: none;
+            cursor: pointer;
+            display: block;
+            text-align: center;
+            margin-top: 10px;
+            transition: transform 0.3s ease, background 0.3s ease;
+        }
+        .btn:hover {
+            background: skyblue;
+            transform: scale(1.05);
+        }
+        .chart-container {
+            margin-top: 20px;
+            width: 300px;
+            height: 300px;
+            opacity: 0;
+            animation: fadeIn 1s ease-in-out forwards;
+            animation-delay: 1s;
+        }
+        @keyframes slideUp {
+            from {
+                transform: translateY(20px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+            to {
+                opacity: 1;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h2>Welcome back,<span id="username">Student</span> </h2>
+            <nav>
+                <a href="calendar.html">Academic Calendar</a>
+            </nav>
+        </div>
+        
+        <div class="box">Total Number of Academic Semester Days: <strong>180 days</strong></div>
+        <div class="box">Total Number of Working Days: <strong>120 days</strong></div>
+        <div class="box">Number of Days Present: <strong>115 days</strong></div>
+        <div class="box">Number of Days Absent: <strong>5 days</strong></div>
+
+        <h3>Leave History</h3>
+<table>
+    <thead>
+        <tr>
+            <th>Date</th>
+            <th>Reason</th>
+            <th>Status</th>
+        </tr>
+    </thead>
+    <tbody id="leaveHistoryBody">
+        <!-- Data will be inserted here dynamically -->
+    </tbody>
+</table>
+
+        
+        <center> <button class="btn" onclick="location.href='page3.html'">Apply for Leave</button></center>
+        
+        <div class="chart-container">
+            <canvas id="attendanceChart" width="300" height="300"></canvas>
+        </div>
+    </div>
+
+    <script>
+        
+    document.addEventListener("DOMContentLoaded", function () {
+        fetchLeaveHistory(); // Load leave history when page loads
+    });
+
+    // Fetch Leave History from Backend
+    async function fetchLeaveHistory() {
+        try {
+            const response = await fetch("http://localhost:3001/api/leave-history");
+            if (!response.ok) {
+                throw new Error("Failed to fetch leave history");
+            }
+            const leaveHistory = await response.json();
+            console.log("Fetched leave history:", leaveHistory);
+            updateLeaveHistoryTable(leaveHistory);
+        } catch (error) {
+            console.error("Error fetching leave history:", error);
+        }
+    }
+
+    // Update the Leave History Table
+    function updateLeaveHistoryTable(data) {
+        const tableBody = document.getElementById("leaveHistoryBody"); // Make sure table has this ID
+        if (!tableBody) {
+            console.error("Table body for leave history not found!");
+            return;
+        }
+        console.log("Updating table with data:", data);
+        tableBody.innerHTML = ""; // Clear previous data
+
+        data.forEach((request) => {
+            const row = document.createElement("tr");
+            row.innerHTML = `
+                <td>${formatDate(request.date)}</td>
+                <td>${request.reason}</td>
+                <td class="status-cell">${request.status}</td>
+            `;
+            tableBody.appendChild(row);
+        });
+    }
+
+    // Submit Leave Request
+    async function submitLeaveRequest() {
+        const date = document.getElementById("leaveDate").value;
+        const reason = document.getElementById("leaveReason").value;
+
+        if (!date || !reason) {
+            alert("Please enter both date and reason.");
+            return;
+        }
+
+        try {
+            const response = await fetch("http://localhost:3001/api/submit-leave", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ date, reason, status: "Pending" })
+            });
+
+            const data = await response.json();
+            alert(data.message);
+
+            fetchLeaveHistory(); // Refresh table after submission
+        } catch (error) {
+            console.error("Error submitting leave request:", error);
+        }
+    }
+
+    // Function to update status after admin approval/rejection
+    async function updateLeaveStatus(id, status) {
+        try {
+            const response = await fetch("http://localhost:3001/api/update-leave-status", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ id, status })
+            });
+
+            const data = await response.json();
+            alert(data.message);
+
+            fetchLeaveHistory(); // Refresh table after status update
+        } catch (error) {
+            console.error("Error updating leave status:", error);
+        }
+    }
+
+    // Function to format date properly
+    function formatDate(dateString) {
+        if (!dateString) return "N/A";
+        const date = new Date(dateString);
+        return date.toISOString().split("T")[0]; // Format: YYYY-MM-DD
+    }
+
+        const ctx = document.getElementById('attendanceChart').getContext('2d');
+        new Chart(ctx, {
+            type: 'pie',
+            data: {
+                labels: ['Present Days', 'Absent Days'],
+                datasets: [{
+                    data: [115, 5],
+                    backgroundColor: ['purple', '#dc3545']
+                }]
+            },
+            options: {
+                responsive: true,
+                rotation: -0.5 * Math.PI,
+                animation: {
+                        animateRotate: true,
+                        animateScale: true,
+                        duration: 5000
+                    },
+                plugins: {
+                    legend: {
+                        position: 'top'
+                    }
+                }
+            }
+        });
+        document.addEventListener("DOMContentLoaded", function() {
+    const username = localStorage.getItem("username"); // Get stored username
+    console.log("Fetched username from localStorage:", username); // Debugging
+
+    if (username) {
+        document.getElementById("username").textContent = username;
+    } else {
+        document.getElementById("username").textContent = "Student"; // Default if not found
+    }
+}); 
+    </script>
+</body>
+</html>

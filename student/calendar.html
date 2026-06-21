@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Academic Calendar 2025</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            background: linear-gradient(to right, #4A90E2, #9013FE);
+        }
+        .calendar {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+        .month {
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(1,1,1,1);
+            margin: 15px;
+            padding: 15px;
+            width: 400px;
+            box-sizing: border-box;
+            transition: transform 0.3s ease-in-out;
+            opacity: 0;
+            transform: translateY(20px);
+            animation: fadeIn 0.5s ease-in-out forwards;
+        }
+        .month:hover {
+            transform: scale(1.05);
+        }
+        .month h3 {
+            background-color: blue;
+            color: white;
+            padding: 10px;
+            margin: -15px -15px 10px -15px;
+            border-top-left-radius: 10px;
+            border-top-right-radius: 10px;
+        }
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            table-layout: fixed;
+        }
+        th, td {
+            border: 1px solid black;
+            padding: 8px;
+            text-align: center;
+            width: 14.28%;
+            height: 40px;
+        }
+        .holiday, .sunday {
+            background-color: red;
+            color: white;
+        }
+        .internal1 {
+            background-color: lightblue;
+        }
+        .internal2 {
+            background-color: violet;
+            color: white;
+        }
+        .semester {
+            background-color: purple;
+            color: white;
+        }
+        .practical {
+            background-color: yellow;
+        }
+    </style>
+</head>
+<body>
+    <h1>Academic Calendar 2025</h1>
+    <div class="calendar">
+        <script>
+            const months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+            const holidays = {"Jan 14": "Pongal", "Nov 1": "Diwali"};
+            const internal1 = {"Mar 15": "Internal 1", "Mar 16": "Internal 1", "Mar 17": "Internal 1", "Mar 18": "Internal 1", "Mar 19": "Internal 1", "Mar 20": "Internal 1", "Mar 21": "Internal 1", "Mar 22": "Internal 1"};
+            const internal2 = {"May 21": "Internal 2", "May 22": "Internal 2", "May 23": "Internal 2", "May 24": "Internal 2", "May 25": "Internal 2", "May 26": "Internal 2", "May 27": "Internal 2"};
+            const semesterExam = {"June 4": "Semester Exam", "June 5": "Semester Exam", "June 6": "Semester Exam", "June 7": "Semester Exam", "June 8": "Semester Exam", "June 9": "Semester Exam", "June 10": "Semester Exam"};
+            const practicals = {"May 28": "Practical", "May 29": "Practical", "May 30": "Practical", "May 31": "Practical", "June 1": "Practical"};
+
+            document.write('<div class="calendar">');
+            for (let i = 0; i < 12; i++) {
+                document.write('<div class="month">');
+                document.write('<h3>' + months[i] + ' 2025</h3>');
+                document.write('<table><tr><th>Sun</th><th>Mon</th><th>Tue</th><th>Wed</th><th>Thu</th><th>Fri</th><th>Sat</th></tr>');
+                
+                let date = new Date(2025, i, 1);
+                let firstDay = date.getDay();
+                let daysInMonth = new Date(2025, i + 1, 0).getDate();
+                
+                document.write('<tr>');
+                for (let j = 0; j < firstDay; j++) {
+                    document.write('<td></td>');
+                }
+                for (let day = 1; day <= daysInMonth; day++) {
+                    let key = months[i].substr(0, 3) + ' ' + day;
+                    let className = '';
+
+                    if (holidays[key]) className = 'holiday';
+                    if (date.getDay() === 0) className = 'sunday';
+                    if (internal1[key]) className = 'internal1';
+                    if (internal2[key]) className = 'internal2';
+                    if (semesterExam[key]) className = 'semester';
+                    if (practicals[key]) className = 'practical';
+                    
+                    document.write('<td class="' + className + '">' + day + '</td>');
+                    date.setDate(date.getDate() + 1);
+                    if (date.getDay() === 0) {
+                        document.write('</tr><tr>');
+                    }
+                }
+                document.write('</tr></table></div>');
+            }
+            document.write('</div>');
+        </script>
+    </div>
+    <div class="events">
+        <h2>Important Dates</h2>
+        <ul>
+            <li class="internal1">Internal Exam 1: March 15 - March 22</li>
+            <li class="internal2">Internal Exam 2: May 21 - May 27</li>
+            <li class="semester">Semester Exam: June 4 - June 10</li>
+            <li class="practical">Practical Exams: May 28 - June 1</li>
+            <li class="holiday">Diwali: Nov 1</li>
+            <li class="holiday">Pongal: Jan 14</li>
+            <li>Next Academic Semester Begins: July 1</li>
+        </ul>
+    </div>
+</body>
+</html>
