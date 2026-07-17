@@ -3,142 +3,363 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Academic Calendar 2025</title>
+    <title>Academic Calendar 2025 · LeaveMS</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            text-align: center;
-            background: linear-gradient(to right, #4A90E2, #9013FE);
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        :root {
+            --bg:        #F8FAFC;
+            --card:      #FFFFFF;
+            --border:    #E5E7EB;
+            --primary:   #2563EB;
+            --text:      #111827;
+            --muted:     #6B7280;
+
+            /* Event colours — subtle, per spec */
+            --holiday-bg: #FEE2E2; --holiday-text: #991B1B;
+            --int1-bg:    #DBEAFE; --int1-text:    #1E40AF;
+            --int2-bg:    #DBEAFE; --int2-text:    #1E40AF;
+            --semester-bg:#E0E7FF; --semester-text:#3730A3;
+            --practical-bg:#FEF3C7;--practical-text:#92400E;
+            --sunday-bg:  #FEE2E2; --sunday-text:  #991B1B;
         }
-        .calendar {
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+        }
+
+        /* ── Top Nav ── */
+        .topnav {
+            position: sticky; top: 0; z-index: 100;
+            height: 60px;
+            background: #fff;
+            border-bottom: 1px solid var(--border);
+            display: flex; align-items: center;
+            padding: 0 32px; gap: 12px;
+        }
+        .topnav-logo { display: flex; align-items: center; gap: 8px; text-decoration: none; }
+        .nav-icon {
+            width: 30px; height: 30px;
+            background: var(--primary); border-radius: 7px;
+            display: flex; align-items: center; justify-content: center;
+        }
+        .nav-icon svg { width: 17px; height: 17px; fill: none; stroke: #fff; stroke-width: 2; stroke-linecap: round; }
+        .nav-logo-name { font-size: 14px; font-weight: 700; color: var(--text); }
+        .nav-div { width: 1px; height: 20px; background: var(--border); }
+        .nav-page { font-size: 14px; font-weight: 500; color: var(--muted); }
+        .nav-spacer { flex: 1; }
+        .back-link {
+            height: 34px; padding: 0 12px;
+            display: inline-flex; align-items: center; gap: 6px;
+            font-size: 13px; font-weight: 500; color: var(--muted);
+            text-decoration: none; border-radius: 7px;
+            transition: background 150ms, color 150ms;
+        }
+        .back-link svg { width: 14px; height: 14px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; }
+        .back-link:hover { background: var(--bg); color: var(--text); }
+
+        /* ── Page wrapper ── */
+        .page-wrap {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 32px 24px 64px;
+        }
+
+        /* ── Page heading ── */
+        .page-header {
+            margin-bottom: 28px;
+        }
+        .page-header h1 {
+            font-size: 22px; font-weight: 700; letter-spacing: -0.4px;
+        }
+        .page-header p { font-size: 13px; color: var(--muted); margin-top: 4px; }
+
+        /* ── Legend strip ── */
+        .legend {
             display: flex;
             flex-wrap: wrap;
-            justify-content: center;
+            gap: 8px;
+            margin-bottom: 28px;
         }
+        .legend-item {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            height: 28px;
+            padding: 0 10px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+        .legend-dot {
+            width: 8px; height: 8px; border-radius: 50%;
+        }
+        .leg-holiday  { background: var(--holiday-bg);  color: var(--holiday-text); }
+        .leg-internal { background: var(--int1-bg);      color: var(--int1-text); }
+        .leg-semester { background: var(--semester-bg);  color: var(--semester-text); }
+        .leg-practical{ background: var(--practical-bg); color: var(--practical-text); }
+        .leg-sunday   { background: var(--sunday-bg);    color: var(--sunday-text); }
+
+        /* ── Calendar grid ── */
+        .calendar {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 20px;
+        }
+
+        /* ── Month card ── */
         .month {
-            background: white;
-            border-radius: 10px;
-            box-shadow: 0 4px 8px rgba(1,1,1,1);
-            margin: 15px;
-            padding: 15px;
-            width: 400px;
-            box-sizing: border-box;
-            transition: transform 0.3s ease-in-out;
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            overflow: hidden;
+            /* keep original animations */
             opacity: 0;
             transform: translateY(20px);
             animation: fadeIn 0.5s ease-in-out forwards;
         }
-        .month:hover {
-            transform: scale(1.05);
-        }
+        .month:hover { box-shadow: 0 4px 20px rgba(0,0,0,.08); transition: box-shadow 150ms; }
         .month h3 {
-            background-color: blue;
-            color: white;
-            padding: 10px;
-            margin: -15px -15px 10px -15px;
-            border-top-left-radius: 10px;
-            border-top-right-radius: 10px;
+            background: var(--primary);
+            color: #fff;
+            font-size: 13px;
+            font-weight: 600;
+            padding: 12px 16px;
+            letter-spacing: 0.2px;
         }
         @keyframes fadeIn {
-            from {
-                opacity: 0;
-                transform: translateY(20px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
+            from { opacity: 0; transform: translateY(20px); }
+            to   { opacity: 1; transform: translateY(0); }
         }
+
+        /* ── Month table ── */
         table {
             width: 100%;
             border-collapse: collapse;
             table-layout: fixed;
         }
-        th, td {
-            border: 1px solid black;
-            padding: 8px;
+        th {
+            font-size: 10px;
+            font-weight: 600;
+            color: var(--muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            padding: 8px 0;
             text-align: center;
-            width: 14.28%;
-            height: 40px;
+            border-bottom: 1px solid var(--border);
         }
+        td {
+            padding: 6px 0;
+            text-align: center;
+            font-size: 12px;
+            font-weight: 500;
+            color: var(--text);
+            width: 14.28%;
+            height: 32px;
+            border: none;
+        }
+        td:first-child { border-left: none; }
+
+        /* ── Day classes — override original names ── */
         .holiday, .sunday {
-            background-color: red;
-            color: white;
+            background: var(--holiday-bg);
+            color: var(--holiday-text);
+            border-radius: 6px;
         }
         .internal1 {
-            background-color: lightblue;
+            background: var(--int1-bg);
+            color: var(--int1-text);
+            border-radius: 6px;
         }
         .internal2 {
-            background-color: violet;
-            color: white;
+            background: var(--int2-bg);
+            color: var(--int2-text);
+            border-radius: 6px;
         }
         .semester {
-            background-color: purple;
-            color: white;
+            background: var(--semester-bg);
+            color: var(--semester-text);
+            border-radius: 6px;
         }
         .practical {
-            background-color: yellow;
+            background: var(--practical-bg);
+            color: var(--practical-text);
+            border-radius: 6px;
+        }
+
+        /* ── Important Dates section ── */
+        .events {
+            margin-top: 40px;
+        }
+        .events h2 {
+            font-size: 16px;
+            font-weight: 700;
+            margin-bottom: 16px;
+            letter-spacing: -0.2px;
+        }
+        .events-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 10px;
+        }
+        .event-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 12px 16px;
+            border-radius: 10px;
+            font-size: 13px;
+            font-weight: 500;
+            border: 1px solid transparent;
+        }
+        .event-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+
+        .event-item.ev-holiday  { background: var(--holiday-bg);  color: var(--holiday-text);  border-color: #FECACA; }
+        .event-item.ev-internal { background: var(--int1-bg);      color: var(--int1-text);      border-color: #BFDBFE; }
+        .event-item.ev-semester { background: var(--semester-bg);  color: var(--semester-text);  border-color: #C7D2FE; }
+        .event-item.ev-practical{ background: var(--practical-bg); color: var(--practical-text); border-color: #FDE68A; }
+        .event-item.ev-plain    { background: #fff;                 color: var(--text);           border-color: var(--border); }
+
+        /* ── Responsive ── */
+        @media (max-width: 640px) {
+            .topnav { padding: 0 16px; }
+            .page-wrap { padding: 20px 12px 48px; }
+            .calendar { grid-template-columns: 1fr; }
         }
     </style>
 </head>
 <body>
-    <h1>Academic Calendar 2025</h1>
-    <div class="calendar">
-        <script>
-            const months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
-            const holidays = {"Jan 14": "Pongal", "Nov 1": "Diwali"};
-            const internal1 = {"Mar 15": "Internal 1", "Mar 16": "Internal 1", "Mar 17": "Internal 1", "Mar 18": "Internal 1", "Mar 19": "Internal 1", "Mar 20": "Internal 1", "Mar 21": "Internal 1", "Mar 22": "Internal 1"};
-            const internal2 = {"May 21": "Internal 2", "May 22": "Internal 2", "May 23": "Internal 2", "May 24": "Internal 2", "May 25": "Internal 2", "May 26": "Internal 2", "May 27": "Internal 2"};
-            const semesterExam = {"June 4": "Semester Exam", "June 5": "Semester Exam", "June 6": "Semester Exam", "June 7": "Semester Exam", "June 8": "Semester Exam", "June 9": "Semester Exam", "June 10": "Semester Exam"};
-            const practicals = {"May 28": "Practical", "May 29": "Practical", "May 30": "Practical", "May 31": "Practical", "June 1": "Practical"};
 
-            document.write('<div class="calendar">');
-            for (let i = 0; i < 12; i++) {
-                document.write('<div class="month">');
-                document.write('<h3>' + months[i] + ' 2025</h3>');
-                document.write('<table><tr><th>Sun</th><th>Mon</th><th>Tue</th><th>Wed</th><th>Thu</th><th>Fri</th><th>Sat</th></tr>');
-                
-                let date = new Date(2025, i, 1);
-                let firstDay = date.getDay();
-                let daysInMonth = new Date(2025, i + 1, 0).getDate();
-                
-                document.write('<tr>');
-                for (let j = 0; j < firstDay; j++) {
-                    document.write('<td></td>');
-                }
-                for (let day = 1; day <= daysInMonth; day++) {
-                    let key = months[i].substr(0, 3) + ' ' + day;
-                    let className = '';
-
-                    if (holidays[key]) className = 'holiday';
-                    if (date.getDay() === 0) className = 'sunday';
-                    if (internal1[key]) className = 'internal1';
-                    if (internal2[key]) className = 'internal2';
-                    if (semesterExam[key]) className = 'semester';
-                    if (practicals[key]) className = 'practical';
-                    
-                    document.write('<td class="' + className + '">' + day + '</td>');
-                    date.setDate(date.getDate() + 1);
-                    if (date.getDay() === 0) {
-                        document.write('</tr><tr>');
-                    }
-                }
-                document.write('</tr></table></div>');
-            }
-            document.write('</div>');
-        </script>
+    <!-- Top Nav -->
+    <div class="topnav">
+        <a href="student.html" class="topnav-logo">
+            <div class="nav-icon">
+                <svg viewBox="0 0 24 24"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="1"/><path d="M9 12h6M9 16h4"/></svg>
+            </div>
+            <span class="nav-logo-name">LeaveMS</span>
+        </a>
+        <div class="nav-div"></div>
+        <span class="nav-page">Academic Calendar</span>
+        <div class="nav-spacer"></div>
+        <a href="student.html" class="back-link">
+            <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
+            Dashboard
+        </a>
     </div>
-    <div class="events">
-        <h2>Important Dates</h2>
-        <ul>
-            <li class="internal1">Internal Exam 1: March 15 - March 22</li>
-            <li class="internal2">Internal Exam 2: May 21 - May 27</li>
-            <li class="semester">Semester Exam: June 4 - June 10</li>
-            <li class="practical">Practical Exams: May 28 - June 1</li>
-            <li class="holiday">Diwali: Nov 1</li>
-            <li class="holiday">Pongal: Jan 14</li>
-            <li>Next Academic Semester Begins: July 1</li>
-        </ul>
+
+    <div class="page-wrap">
+
+        <div class="page-header">
+            <h1>Academic Calendar 2025</h1>
+            <p>Full-year academic schedule including exams, holidays, and key dates.</p>
+        </div>
+
+        <!-- Legend -->
+        <div class="legend">
+            <span class="legend-item leg-holiday">
+                <span class="legend-dot" style="background:#DC2626;"></span>
+                Holiday / Sunday
+            </span>
+            <span class="legend-item leg-internal">
+                <span class="legend-dot" style="background:#2563EB;"></span>
+                Internal Exam
+            </span>
+            <span class="legend-item leg-semester">
+                <span class="legend-dot" style="background:#4F46E5;"></span>
+                Semester Exam
+            </span>
+            <span class="legend-item leg-practical">
+                <span class="legend-dot" style="background:#D97706;"></span>
+                Practical Exam
+            </span>
+        </div>
+
+        <!-- Calendar — JS writes into this div (original calendar rendering logic preserved) -->
+        <div class="calendar">
+            <script>
+                const months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+                const holidays = {"Jan 14": "Pongal", "Nov 1": "Diwali"};
+                const internal1 = {"Mar 15": "Internal 1", "Mar 16": "Internal 1", "Mar 17": "Internal 1", "Mar 18": "Internal 1", "Mar 19": "Internal 1", "Mar 20": "Internal 1", "Mar 21": "Internal 1", "Mar 22": "Internal 1"};
+                const internal2 = {"May 21": "Internal 2", "May 22": "Internal 2", "May 23": "Internal 2", "May 24": "Internal 2", "May 25": "Internal 2", "May 26": "Internal 2", "May 27": "Internal 2"};
+                const semesterExam = {"June 4": "Semester Exam", "June 5": "Semester Exam", "June 6": "Semester Exam", "June 7": "Semester Exam", "June 8": "Semester Exam", "June 9": "Semester Exam", "June 10": "Semester Exam"};
+                const practicals = {"May 28": "Practical", "May 29": "Practical", "May 30": "Practical", "May 31": "Practical", "June 1": "Practical"};
+
+                document.write('<div class="calendar">');
+                for (let i = 0; i < 12; i++) {
+                    document.write('<div class="month">');
+                    document.write('<h3>' + months[i] + ' 2025</h3>');
+                    document.write('<table><tr><th>Sun</th><th>Mon</th><th>Tue</th><th>Wed</th><th>Thu</th><th>Fri</th><th>Sat</th></tr>');
+                    
+                    let date = new Date(2025, i, 1);
+                    let firstDay = date.getDay();
+                    let daysInMonth = new Date(2025, i + 1, 0).getDate();
+                    
+                    document.write('<tr>');
+                    for (let j = 0; j < firstDay; j++) {
+                        document.write('<td></td>');
+                    }
+                    for (let day = 1; day <= daysInMonth; day++) {
+                        let key = months[i].substr(0, 3) + ' ' + day;
+                        let className = '';
+
+                        if (holidays[key]) className = 'holiday';
+                        if (date.getDay() === 0) className = 'sunday';
+                        if (internal1[key]) className = 'internal1';
+                        if (internal2[key]) className = 'internal2';
+                        if (semesterExam[key]) className = 'semester';
+                        if (practicals[key]) className = 'practical';
+                        
+                        document.write('<td class="' + className + '">' + day + '</td>');
+                        date.setDate(date.getDate() + 1);
+                        if (date.getDay() === 0) {
+                            document.write('</tr><tr>');
+                        }
+                    }
+                    document.write('</tr></table></div>');
+                }
+                document.write('</div>');
+            </script>
+        </div>
+
+        <!-- Important Dates -->
+        <div class="events">
+            <h2>Important Dates</h2>
+            <div class="events-grid">
+                <div class="event-item ev-internal">
+                    <span class="event-dot" style="background:#2563EB;"></span>
+                    Internal Exam 1: March 15 – March 22
+                </div>
+                <div class="event-item ev-internal">
+                    <span class="event-dot" style="background:#2563EB;"></span>
+                    Internal Exam 2: May 21 – May 27
+                </div>
+                <div class="event-item ev-semester">
+                    <span class="event-dot" style="background:#4F46E5;"></span>
+                    Semester Exam: June 4 – June 10
+                </div>
+                <div class="event-item ev-practical">
+                    <span class="event-dot" style="background:#D97706;"></span>
+                    Practical Exams: May 28 – June 1
+                </div>
+                <div class="event-item ev-holiday">
+                    <span class="event-dot" style="background:#DC2626;"></span>
+                    Diwali: November 1
+                </div>
+                <div class="event-item ev-holiday">
+                    <span class="event-dot" style="background:#DC2626;"></span>
+                    Pongal: January 14
+                </div>
+                <div class="event-item ev-plain">
+                    <span class="event-dot" style="background:#6B7280;"></span>
+                    Next Academic Semester: July 1
+                </div>
+            </div>
+        </div>
+
     </div>
 </body>
 </html>

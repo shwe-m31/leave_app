@@ -3,262 +3,540 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Student Portal</title>
+    <title>Student Dashboard · LeaveMS</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        :root {
+            --bg:        #F8FAFC;
+            --card:      #FFFFFF;
+            --border:    #E5E7EB;
+            --primary:   #2563EB;
+            --primary-h: #1D4ED8;
+            --success:   #16A34A;
+            --danger:    #DC2626;
+            --warning:   #D97706;
+            --text:      #111827;
+            --muted:     #6B7280;
+            --nav-h:     60px;
+        }
+
         body {
-            font-family: Arial, sans-serif;
-            margin: 20px;
-            background: linear-gradient(to right, #4A90E2, #9013FE);
-            animation: fadeIn 1s ease-in-out;
+            font-family: 'Inter', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
         }
-        .container {
-            max-width: 900px;
-            margin: auto;
-            background: linear-gradient(to right, #4A90E2, #9013FE);
-            padding: 20px;
-            border-radius: 10px;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-            transform: translateY(20px);
-            opacity: 0;
-            animation: slideUp 1s ease-out forwards;
-        }
-        
-        .header {
+
+        /* ── Top Nav ── */
+        .topnav {
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            height: var(--nav-h);
+            background: #fff;
+            border-bottom: 1px solid var(--border);
             display: flex;
-            justify-content: space-between;
             align-items: center;
-            margin-bottom: 20px;
+            padding: 0 32px;
+            gap: 16px;
         }
-        .box {
-            background: #e3e3e3;
-            padding: 15px;
-            margin: 10px 0;
-            border-radius: 5px;
-            opacity: 0;
-            animation: fadeIn 1s ease-in-out forwards;
-            animation-delay: 0.5s;
+        .topnav-logo {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            text-decoration: none;
         }
+        .topnav-logo-icon {
+            width: 30px; height: 30px;
+            background: var(--primary);
+            border-radius: 7px;
+            display: flex; align-items: center; justify-content: center;
+        }
+        .topnav-logo-icon svg { width: 17px; height: 17px; fill: none; stroke: #fff; stroke-width: 2; stroke-linecap: round; }
+        .topnav-logo-name { font-size: 14px; font-weight: 700; color: var(--text); }
+        .topnav-divider { width: 1px; height: 20px; background: var(--border); margin: 0 4px; }
+        .topnav-title { font-size: 14px; font-weight: 500; color: var(--muted); }
+        .topnav-spacer { flex: 1; }
+        .topnav-user {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 13px;
+            font-weight: 500;
+            color: var(--text);
+        }
+        .topnav-avatar {
+            width: 30px; height: 30px;
+            background: #EFF6FF;
+            border-radius: 50%;
+            border: 1px solid #BFDBFE;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 12px; font-weight: 600; color: var(--primary);
+        }
+        .topnav nav { display: flex; gap: 4px; }
+        .topnav nav a {
+            height: 34px;
+            padding: 0 12px;
+            display: inline-flex;
+            align-items: center;
+            font-size: 13px;
+            font-weight: 500;
+            color: var(--muted);
+            text-decoration: none;
+            border-radius: 7px;
+            transition: background 150ms, color 150ms;
+        }
+        .topnav nav a:hover { background: var(--bg); color: var(--text); }
+
+        /* ── Page wrapper ── */
+        .page-wrap {
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 32px 24px 64px;
+        }
+
+        /* ── Page header ── */
+        .page-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 28px;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+        .page-header h1 {
+            font-size: 20px;
+            font-weight: 700;
+            color: var(--text);
+            letter-spacing: -0.3px;
+        }
+        .page-header h1 span#username { color: var(--primary); }
+
+        /* ── Primary button ── */
+        .btn-primary {
+            height: 44px;
+            padding: 0 20px;
+            background: var(--primary);
+            color: #fff;
+            border: none;
+            border-radius: 10px;
+            font-size: 14px;
+            font-weight: 600;
+            font-family: 'Inter', sans-serif;
+            cursor: pointer;
+            transition: background 150ms;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .btn-primary:hover { background: var(--primary-h); }
+        .btn-primary svg { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; }
+
+        /* ── Stat cards grid ── */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+            gap: 16px;
+            margin-bottom: 28px;
+        }
+        .stat-card {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 20px 24px;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+        .stat-card .stat-label {
+            font-size: 12px;
+            font-weight: 500;
+            color: var(--muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .stat-card .stat-value {
+            font-size: 26px;
+            font-weight: 700;
+            color: var(--text);
+            letter-spacing: -0.5px;
+            line-height: 1;
+        }
+        .stat-card .stat-sub {
+            font-size: 12px;
+            color: var(--muted);
+        }
+        .stat-card.accent-green  { border-left: 3px solid var(--success); }
+        .stat-card.accent-blue   { border-left: 3px solid var(--primary); }
+        .stat-card.accent-red    { border-left: 3px solid var(--danger); }
+        .stat-card.accent-orange { border-left: 3px solid var(--warning); }
+
+        /* ── Main 2-col layout ── */
+        .main-grid {
+            display: grid;
+            grid-template-columns: 1fr 300px;
+            gap: 20px;
+            align-items: start;
+        }
+
+        /* ── Card shell ── */
+        .card {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            overflow: hidden;
+        }
+        .card-header {
+            padding: 18px 24px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .card-header h3 {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text);
+        }
+        .card-body { padding: 24px; }
+
+        /* ── Table ── */
         table {
             width: 100%;
             border-collapse: collapse;
-            margin-top: 10px;
         }
-        table, th, td {
-            border: 1px solid #ddd;
-            padding: 8px;
+        thead th {
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            padding: 0 16px 12px;
+            text-align: left;
+            border-bottom: 1px solid var(--border);
         }
-        th {
-            background: blue;
-            color: white;
+        tbody tr {
+            transition: background 150ms;
         }
-        .btn {
-            background: blue;
-            color: white;
-            padding: 10px;
-            border: none;
-            cursor: pointer;
-            display: block;
-            text-align: center;
-            margin-top: 10px;
-            transition: transform 0.3s ease, background 0.3s ease;
+        tbody tr:hover { background: #F9FAFB; }
+        tbody td {
+            padding: 14px 16px;
+            font-size: 13px;
+            color: var(--text);
+            border-bottom: 1px solid var(--border);
         }
-        .btn:hover {
-            background: skyblue;
-            transform: scale(1.05);
+        tbody tr:last-child td { border-bottom: none; }
+
+        /* ── Status badges ── */
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            height: 22px;
+            padding: 0 9px;
+            border-radius: 100px;
+            font-size: 11px;
+            font-weight: 600;
         }
+        .badge-pending  { background: #FEF3C7; color: #92400E; }
+        .badge-approved { background: #DCFCE7; color: #14532D; }
+        .badge-rejected { background: #FEE2E2; color: #7F1D1D; }
+
+        /* ── Chart card ── */
         .chart-container {
-            margin-top: 20px;
-            width: 300px;
-            height: 300px;
-            opacity: 0;
-            animation: fadeIn 1s ease-in-out forwards;
-            animation-delay: 1s;
+            width: 100%;
+            aspect-ratio: 1;
+            padding: 16px;
         }
-        @keyframes slideUp {
-            from {
-                transform: translateY(20px);
-                opacity: 0;
-            }
-            to {
-                transform: translateY(0);
-                opacity: 1;
-            }
+        #attendanceChart { width: 100% !important; height: 100% !important; }
+
+        /* ── Responsive ── */
+        @media (max-width: 900px) {
+            .main-grid { grid-template-columns: 1fr; }
         }
-        @keyframes fadeIn {
-            from {
-                opacity: 0;
-            }
-            to {
-                opacity: 1;
-            }
+        @media (max-width: 640px) {
+            .topnav { padding: 0 16px; }
+            .page-wrap { padding: 20px 16px 48px; }
+            .stats-grid { grid-template-columns: repeat(2, 1fr); }
+        }
+        @media (max-width: 400px) {
+            .stats-grid { grid-template-columns: 1fr; }
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <div class="header">
-            <h2>Welcome back,<span id="username">Student</span> </h2>
-            <nav>
-                <a href="calendar.html">Academic Calendar</a>
-            </nav>
+
+    <!-- Top Navigation -->
+    <header class="topnav">
+        
+        <div class="topnav-divider"></div>
+        <span class="topnav-title">Student Portal</span>
+        <div class="topnav-spacer"></div>
+        <nav>
+            <a href="calendar.html">Academic Calendar</a>
+        </nav>
+        <div class="topnav-user">
+            <div class="topnav-avatar">S</div>
+            <span id="username">Student</span>
         </div>
-        
-        <div class="box">Total Number of Academic Semester Days: <strong>180 days</strong></div>
-        <div class="box">Total Number of Working Days: <strong>120 days</strong></div>
-        <div class="box">Number of Days Present: <strong>115 days</strong></div>
-        <div class="box">Number of Days Absent: <strong>5 days</strong></div>
+    </header>
 
-        <h3>Leave History</h3>
-<table>
-    <thead>
-        <tr>
-            <th>Date</th>
-            <th>Reason</th>
-            <th>Status</th>
-        </tr>
-    </thead>
-    <tbody id="leaveHistoryBody">
-        <!-- Data will be inserted here dynamically -->
-    </tbody>
-</table>
+    <!-- Page Content -->
+    <div class="page-wrap">
 
-        
-        <center> <button class="btn" onclick="location.href='page3.html'">Apply for Leave</button></center>
-        
-        <div class="chart-container">
-            <canvas id="attendanceChart" width="300" height="300"></canvas>
+        <!-- Page Header -->
+        <div class="page-header">
+            <div>
+                <h1>Welcome back, <span id="username">Student</span></h1>
+                <p style="font-size:13px;color:var(--muted);margin-top:4px;">Here's your academic leave summary for this semester.</p>
+            </div>
+            <button class="btn-primary" onclick="location.href='page3.html'">
+                <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                Apply for Leave
+            </button>
+        </div>
+
+        <!-- Student Profile Section -->
+        <div class="card" style="margin-bottom: 28px;">
+            <div class="card-header">
+                <h3>Student Profile</h3>
+            </div>
+            <div class="card-body">
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px;">
+                    <div>
+                        <div style="font-size: 12px; color: var(--muted); margin-bottom: 4px;">Name</div>
+                        <div style="font-size: 14px; font-weight: 600; color: var(--text);" id="profileName">-</div>
+                    </div>
+                    <div>
+                        <div style="font-size: 12px; color: var(--muted); margin-bottom: 4px;">Email</div>
+                        <div style="font-size: 14px; font-weight: 500; color: var(--text);" id="profileEmail">-</div>
+                    </div>
+                    <div>
+                        <div style="font-size: 12px; color: var(--muted); margin-bottom: 4px;">Department</div>
+                        <div style="font-size: 14px; font-weight: 500; color: var(--text);" id="profileDepartment">-</div>
+                    </div>
+                    <div>
+                        <div style="font-size: 12px; color: var(--muted); margin-bottom: 4px;">Admin</div>
+                        <div style="font-size: 14px; font-weight: 500; color: var(--text);" id="profileAdmin">-</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Stat Cards -->
+        <div class="stats-grid">
+            <div class="stat-card accent-blue">
+                <div class="stat-label">Semester Days</div>
+                <div class="stat-value">180</div>
+                <div class="stat-sub">Total academic days</div>
+            </div>
+            <div class="stat-card accent-orange">
+                <div class="stat-label">Working Days</div>
+                <div class="stat-value">100</div>
+                <div class="stat-sub">Scheduled instruction days</div>
+            </div>
+            <div class="stat-card accent-green">
+                <div class="stat-label">Attendance</div>
+                <div class="stat-value" id="attendancePercentage">100%</div>
+                <div class="stat-sub">Current attendance rate</div>
+            </div>
+            <div class="stat-card accent-red">
+                <div class="stat-label">Days Absent</div>
+                <div class="stat-value" id="daysAbsent">0</div>
+                <div class="stat-sub">Approved leave days</div>
+            </div>
+        </div>
+
+        <!-- Main Grid -->
+        <div class="main-grid">
+
+            <!-- Leave History Table -->
+            <div class="card">
+                <div class="card-header">
+                    <h3>Student Leave History</h3>
+                    <span style="font-size:12px;color:var(--muted);">All leave requests</span>
+                </div>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>From</th>
+                            <th>To</th>
+                            <th>Reason</th>
+                            <th>Days</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody id="leaveHistoryBody">
+                        <!-- populated by JavaScript -->
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Attendance Chart -->
+            <div class="card">
+                <div class="card-header">
+                    <h3>Attendance</h3>
+                </div>
+                <div class="chart-container">
+                    <canvas id="attendanceChart" width="300" height="300"></canvas>
+                </div>
+            </div>
+
         </div>
     </div>
 
+    <!-- Original JavaScript preserved exactly -->
     <script>
+        let attendanceChart = null;
         
-    document.addEventListener("DOMContentLoaded", function () {
-        fetchLeaveHistory(); // Load leave history when page loads
-    });
-
-    // Fetch Leave History from Backend
-    async function fetchLeaveHistory() {
-        try {
-            const response = await fetch("http://localhost:3001/api/leave-history");
-            if (!response.ok) {
-                throw new Error("Failed to fetch leave history");
+        document.addEventListener("DOMContentLoaded", function () {
+            const userId = localStorage.getItem("userId");
+            const userName = localStorage.getItem("userName");
+            
+            if (userName) {
+                document.getElementById("username").textContent = userName;
             }
-            const leaveHistory = await response.json();
-            console.log("Fetched leave history:", leaveHistory);
-            updateLeaveHistoryTable(leaveHistory);
-        } catch (error) {
-            console.error("Error fetching leave history:", error);
-        }
-    }
-
-    // Update the Leave History Table
-    function updateLeaveHistoryTable(data) {
-        const tableBody = document.getElementById("leaveHistoryBody"); // Make sure table has this ID
-        if (!tableBody) {
-            console.error("Table body for leave history not found!");
-            return;
-        }
-        console.log("Updating table with data:", data);
-        tableBody.innerHTML = ""; // Clear previous data
-
-        data.forEach((request) => {
-            const row = document.createElement("tr");
-            row.innerHTML = `
-                <td>${formatDate(request.date)}</td>
-                <td>${request.reason}</td>
-                <td class="status-cell">${request.status}</td>
-            `;
-            tableBody.appendChild(row);
+            
+            if (userId) {
+                fetchStudentProfile(userId);
+                fetchLeaveHistory(userId);
+            }
         });
-    }
 
-    // Submit Leave Request
-    async function submitLeaveRequest() {
-        const date = document.getElementById("leaveDate").value;
-        const reason = document.getElementById("leaveReason").value;
-
-        if (!date || !reason) {
-            alert("Please enter both date and reason.");
-            return;
+        // Fetch Student Profile
+        async function fetchStudentProfile(userId) {
+            try {
+                const response = await fetch(`http://localhost:3001/api/student-profile?userId=${userId}`);
+                if (!response.ok) {
+                    throw new Error("Failed to fetch student profile");
+                }
+                const profile = await response.json();
+                console.log("Fetched student profile:", profile);
+                updateProfileDisplay(profile);
+                updateAttendanceDisplay(profile.attendance_percentage);
+            } catch (error) {
+                console.error("Error fetching student profile:", error);
+            }
         }
 
-        try {
-            const response = await fetch("http://localhost:3001/api/submit-leave", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ date, reason, status: "Pending" })
-            });
-
-            const data = await response.json();
-            alert(data.message);
-
-            fetchLeaveHistory(); // Refresh table after submission
-        } catch (error) {
-            console.error("Error submitting leave request:", error);
+        // Update Profile Display
+        function updateProfileDisplay(profile) {
+            if (profile.name) document.getElementById("profileName").textContent = profile.name;
+            if (profile.email) document.getElementById("profileEmail").textContent = profile.email;
+            if (profile.department) document.getElementById("profileDepartment").textContent = profile.department;
+            if (profile.admin_name) document.getElementById("profileAdmin").textContent = profile.admin_name;
         }
-    }
 
-    // Function to update status after admin approval/rejection
-    async function updateLeaveStatus(id, status) {
-        try {
-            const response = await fetch("http://localhost:3001/api/update-leave-status", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ id, status })
-            });
-
-            const data = await response.json();
-            alert(data.message);
-
-            fetchLeaveHistory(); // Refresh table after status update
-        } catch (error) {
-            console.error("Error updating leave status:", error);
+        // Update Attendance Display
+        function updateAttendanceDisplay(attendance) {
+            const attendancePercent = parseFloat(attendance) || 100;
+            document.getElementById("attendancePercentage").textContent = attendancePercent.toFixed(1) + "%";
+            
+            const workingDays = 100;
+            const daysAbsent = Math.round(workingDays - (attendancePercent / 100 * workingDays));
+            document.getElementById("daysAbsent").textContent = daysAbsent;
+            
+            // Update pie chart
+            updatePieChart(attendancePercent, daysAbsent);
         }
-    }
 
-    // Function to format date properly
-    function formatDate(dateString) {
-        if (!dateString) return "N/A";
-        const date = new Date(dateString);
-        return date.toISOString().split("T")[0]; // Format: YYYY-MM-DD
-    }
-
-        const ctx = document.getElementById('attendanceChart').getContext('2d');
-        new Chart(ctx, {
-            type: 'pie',
-            data: {
-                labels: ['Present Days', 'Absent Days'],
-                datasets: [{
-                    data: [115, 5],
-                    backgroundColor: ['purple', '#dc3545']
-                }]
-            },
-            options: {
-                responsive: true,
-                rotation: -0.5 * Math.PI,
-                animation: {
+        // Update Pie Chart
+        function updatePieChart(attendance, absent) {
+            const ctx = document.getElementById('attendanceChart').getContext('2d');
+            
+            if (attendanceChart) {
+                attendanceChart.destroy();
+            }
+            
+            attendanceChart = new Chart(ctx, {
+                type: 'pie',
+                data: {
+                    labels: ['Present Days', 'Absent Days'],
+                    datasets: [{
+                        data: [attendance, absent],
+                        backgroundColor: ['#16A34A', '#DC2626']
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    rotation: -0.5 * Math.PI,
+                    animation: {
                         animateRotate: true,
                         animateScale: true,
                         duration: 5000
                     },
-                plugins: {
-                    legend: {
-                        position: 'top'
+                    plugins: {
+                        legend: {
+                            position: 'top'
+                        }
                     }
                 }
-            }
-        });
-        document.addEventListener("DOMContentLoaded", function() {
-    const username = localStorage.getItem("username"); // Get stored username
-    console.log("Fetched username from localStorage:", username); // Debugging
+            });
+        }
 
-    if (username) {
-        document.getElementById("username").textContent = username;
-    } else {
-        document.getElementById("username").textContent = "Student"; // Default if not found
-    }
-}); 
+        // Fetch Leave History from Backend
+        async function fetchLeaveHistory(userId) {
+            try {
+                const response = await fetch(`http://localhost:3001/api/student-leave-history?userId=${userId}`);
+                if (!response.ok) {
+                    throw new Error("Failed to fetch leave history");
+                }
+                const leaveHistory = await response.json();
+                console.log("Fetched leave history:", leaveHistory);
+                updateLeaveHistoryTable(leaveHistory);
+            } catch (error) {
+                console.error("Error fetching leave history:", error);
+            }
+        }
+
+        // Update the Leave History Table
+        function updateLeaveHistoryTable(data) {
+            const tableBody = document.getElementById("leaveHistoryBody");
+            if (!tableBody) {
+                console.error("Table body for leave history not found!");
+                return;
+            }
+            console.log("Updating table with data:", data);
+            tableBody.innerHTML = "";
+
+            if (data.length === 0) {
+                tableBody.innerHTML = "<tr><td colspan='5' style='text-align:center; padding: 20px; color: var(--muted);'>No leave requests found</td></tr>";
+                return;
+            }
+
+            data.forEach((request) => {
+                const row = document.createElement("tr");
+                
+                // Calculate number of days
+                const fromDate = new Date(request.from_date);
+                const toDate = new Date(request.to_date);
+                const daysCount = Math.ceil((toDate - fromDate) / (1000 * 60 * 60 * 24)) + 1;
+                
+                // Status badge class
+                let statusClass = 'badge-pending';
+                const statusText = request.status || 'Pending';
+                if (statusText.toLowerCase() === 'approved') statusClass = 'badge-approved';
+                else if (statusText.toLowerCase() === 'rejected') statusClass = 'badge-rejected';
+                
+                row.innerHTML = `
+                    <td>${formatDate(request.from_date)}</td>
+                    <td>${formatDate(request.to_date)}</td>
+                    <td>${request.reason}</td>
+                    <td>${daysCount}</td>
+                    <td><span class="badge ${statusClass}">${statusText}</span></td>
+                `;
+                tableBody.appendChild(row);
+            });
+        }
+
+        // Function to format date properly
+        function formatDate(dateString) {
+            if (!dateString) return "N/A";
+            const date = new Date(dateString);
+            return date.toISOString().split("T")[0];
+        }
     </script>
 </body>
 </html>

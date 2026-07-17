@@ -3,109 +3,348 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Student Details</title>
+    <title>Student Details · LeaveMS</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #f4f4f4;
-            margin: 0;
-            padding: 20px;
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        :root {
+            --bg:      #F8FAFC;
+            --card:    #FFFFFF;
+            --border:  #E5E7EB;
+            --primary: #2563EB;
+            --success: #16A34A;
+            --warning: #D97706;
+            --danger:  #DC2626;
+            --text:    #111827;
+            --muted:   #6B7280;
         }
 
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+        }
+
+        /* ── Top Nav ── */
+        .topnav {
+            position: sticky; top: 0; z-index: 100;
+            height: 60px;
+            background: #fff;
+            border-bottom: 1px solid var(--border);
+            display: flex; align-items: center;
+            padding: 0 32px; gap: 12px;
+        }
+        .topnav-logo { display: flex; align-items: center; gap: 8px; text-decoration: none; }
+        .nav-icon {
+            width: 30px; height: 30px;
+            background: var(--primary); border-radius: 7px;
+            display: flex; align-items: center; justify-content: center;
+        }
+        .nav-icon svg { width: 17px; height: 17px; fill: none; stroke: #fff; stroke-width: 2; stroke-linecap: round; }
+        .nav-logo-name { font-size: 14px; font-weight: 700; color: var(--text); }
+        .nav-div { width: 1px; height: 20px; background: var(--border); }
+        .nav-page { font-size: 14px; font-weight: 500; color: var(--muted); }
+        .nav-spacer { flex: 1; }
+        .back-link {
+            height: 34px; padding: 0 12px;
+            display: inline-flex; align-items: center; gap: 6px;
+            font-size: 13px; font-weight: 500; color: var(--muted);
+            text-decoration: none; border-radius: 7px;
+            transition: background 150ms, color 150ms;
+        }
+        .back-link svg { width: 14px; height: 14px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; }
+        .back-link:hover { background: var(--bg); color: var(--text); }
+
+        /* ── Page wrapper ── */
+        .page-wrap {
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 32px 24px 64px;
+        }
+
+        /* ── Page header ── */
+        .page-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin-bottom: 24px;
+        }
+        .page-header h2 {
+            font-size: 20px;
+            font-weight: 700;
+            letter-spacing: -0.3px;
+        }
+
+        /* ── Search ── */
+        .search-wrap {
+            position: relative;
+            width: 280px;
+        }
+        .search-wrap svg {
+            position: absolute;
+            left: 12px; top: 50%;
+            transform: translateY(-50%);
+            width: 15px; height: 15px;
+            fill: none; stroke: var(--muted); stroke-width: 2; stroke-linecap: round;
+            pointer-events: none;
+        }
+        .search-input {
+            width: 100%;
+            height: 40px;
+            padding: 0 14px 0 36px;
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            font-size: 13px;
+            font-family: 'Inter', sans-serif;
+            background: #fff;
+            color: var(--text);
+            outline: none;
+            transition: border-color 150ms, box-shadow 150ms;
+        }
+        .search-input::placeholder { color: #9CA3AF; }
+        .search-input:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(37,99,235,.12);
+        }
+
+        /* ── Table card ── */
+        .table-card {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 0 1px 3px rgba(0,0,0,.04);
+        }
+        .table-card-header {
+            padding: 16px 24px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .table-card-header h3 {
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text);
+        }
+        .row-count {
+            font-size: 12px;
+            color: var(--muted);
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: 100px;
+            padding: 2px 10px;
+        }
+
+        /* ── Table ── */
         .student-table {
             width: 100%;
             border-collapse: collapse;
-            background: white;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-            border-radius: 10px;
-            overflow: hidden;
+        }
+        thead th {
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            padding: 12px 20px;
+            text-align: left;
+            border-bottom: 1px solid var(--border);
+            background: #FAFAFA;
+            position: sticky;
+            top: 60px; /* below the topnav */
+        }
+        tbody tr {
+            transition: background 150ms;
+        }
+        tbody tr:nth-child(even) { background: #FAFAFA; }
+        tbody tr:hover { background: #EFF6FF; }
+        tbody td {
+            padding: 14px 20px;
+            font-size: 13px;
+            color: var(--text);
+            border-bottom: 1px solid var(--border);
+        }
+        tbody tr:last-child td { border-bottom: none; }
+
+        /* ── Attendance badge ── */
+        .att-badge {
+            display: inline-flex;
+            align-items: center;
+            height: 22px;
+            padding: 0 10px;
+            border-radius: 100px;
+            font-size: 11px;
+            font-weight: 600;
+        }
+        .att-high   { background: #DCFCE7; color: #14532D; }
+        .att-medium { background: #FEF3C7; color: #92400E; }
+        .att-low    { background: #FEE2E2; color: #7F1D1D; }
+
+        /* ── Student avatar initial ── */
+        .student-cell {
+            display: flex; align-items: center; gap: 10px;
+        }
+        .student-avatar {
+            width: 28px; height: 28px;
+            border-radius: 50%;
+            background: #EFF6FF;
+            border: 1px solid #BFDBFE;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 11px; font-weight: 700; color: var(--primary);
+            flex-shrink: 0;
         }
 
-        th, td {
-            padding: 15px;
-            text-align: center;
-            border-bottom: 1px solid #ddd;
-        }
-
-        th {
-            background-color: #4A90E2;
-            color: white;
-        }
-
-        tr:hover {
-            background-color: #f1f1f1;
-        }
-
-        /* Responsive Table */
+        /* ── Responsive table ── */
         @media (max-width: 768px) {
-            table, thead, tbody, th, td, tr {
-                display: block;
-            }
-
-            thead tr {
-                display: none; 
-            }
-
-            tr {
-                margin-bottom: 10px;
-                border: 1px solid #ddd;
-            }
-
+            table, thead, tbody, th, td, tr { display: block; }
+            thead tr { display: none; }
+            tr { margin-bottom: 10px; border: 1px solid var(--border); border-radius: 10px; overflow: hidden; }
             td {
                 display: flex;
                 justify-content: space-between;
-                padding: 10px;
+                padding: 10px 16px;
                 text-align: left;
             }
-
             td::before {
                 content: attr(data-label);
-                font-weight: bold;
+                font-weight: 600;
+                color: var(--muted);
+                font-size: 11px;
                 text-transform: uppercase;
+                letter-spacing: 0.4px;
             }
+            tbody tr:nth-child(even) { background: var(--card); }
+        }
+        @media (max-width: 640px) {
+            .topnav { padding: 0 16px; }
+            .page-wrap { padding: 20px 16px 48px; }
+            .page-header { flex-direction: column; align-items: flex-start; }
+            .search-wrap { width: 100%; }
         }
     </style>
 </head>
 <body>
 
-    <h2 style="text-align: center;">Student Details</h2>
+    <!-- Top Nav -->
+    <div class="topnav">
+        <a href="page1.html" class="topnav-logo">
+            <div class="nav-icon">
+                <svg viewBox="0 0 24 24"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="1"/><path d="M9 12h6M9 16h4"/></svg>
+            </div>
+            <span class="nav-logo-name">LeaveMS</span>
+        </a>
+        <div class="nav-div"></div>
+        <span class="nav-page">Students</span>
+        <div class="nav-spacer"></div>
+        <a href="page1.html" class="back-link">
+            <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
+            Admin Dashboard
+        </a>
+    </div>
 
-    <table class="student-table">
-        <thead>
-            <tr>
-                <th>Student Name</th>
-                <th>Department</th>
-                <th>Email ID</th>
-                <th>Attendance %</th>
-            </tr>
-        </thead>
-        <tbody>
-            <tr>
-                <td data-label="Student Name">John Doe</td>
-                <td data-label="Department">Computer Science</td>
-                <td data-label="Email ID">john.doe@example.com</td>
-                <td data-label="Attendance %">95%</td>
-            </tr>
-            <tr>
-                <td data-label="Student Name">Jane Smith</td>
-                <td data-label="Department">Mechanical Engineering</td>
-                <td data-label="Email ID">jane.smith@example.com</td>
-                <td data-label="Attendance %">88%</td>
-            </tr>
-            <tr>
-                <td data-label="Student Name">Mike Johnson</td>
-                <td data-label="Department">Electrical Engineering</td>
-                <td data-label="Email ID">mike.johnson@example.com</td>
-                <td data-label="Attendance %">92%</td>
-            </tr>
-            <tr>
-                <td data-label="Student Name">Emily Davis</td>
-                <td data-label="Department">Civil Engineering</td>
-                <td data-label="Email ID">emily.davis@example.com</td>
-                <td data-label="Attendance %">89%</td>
-            </tr>
-        </tbody>
-    </table>
+    <div class="page-wrap">
 
+        <!-- Page header -->
+        <div class="page-header">
+            <h2>Student Details</h2>
+            <div class="search-wrap">
+                <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                <input type="text" class="search-input" placeholder="Search students…">
+            </div>
+        </div>
+
+        <!-- Table card -->
+        <div class="table-card">
+            <div class="table-card-header">
+                <h3>All Enrolled Students</h3>
+                <span class="row-count" id="studentCount">0 students</span>
+            </div>
+
+            <table class="student-table">
+                <thead>
+                    <tr>
+                        <th>Student Name</th>
+                        <th>Department</th>
+                        <th>Email ID</th>
+                        <th>Attendance %</th>
+                    </tr>
+                </thead>
+                <tbody id="studentsTableBody">
+                    <!-- populated by JavaScript -->
+                </tbody>
+            </table>
+        </div>
+
+    </div>
+
+    <!-- JavaScript to fetch students from database -->
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            fetchStudents();
+        });
+
+        async function fetchStudents() {
+            try {
+                const response = await fetch("http://localhost:3001/api/students");
+                if (!response.ok) {
+                    throw new Error("Server error: " + response.status);
+                }
+                const students = await response.json();
+                console.log("Fetched students:", students);
+                updateStudentsTable(students);
+            } catch (error) {
+                console.error("Error fetching students:", error);
+            }
+        }
+
+        function updateStudentsTable(students) {
+            const tableBody = document.getElementById("studentsTableBody");
+            const countElement = document.getElementById("studentCount");
+            
+            if (!tableBody) {
+                console.error("Table body not found!");
+                return;
+            }
+            
+            tableBody.innerHTML = "";
+            countElement.textContent = students.length + " students";
+
+            if (students.length === 0) {
+                tableBody.innerHTML = "<tr><td colspan='4' style='text-align:center; padding: 20px; color: var(--muted);'>No students found</td></tr>";
+                return;
+            }
+
+            students.forEach((student) => {
+                const row = document.createElement("tr");
+                
+                // Get attendance badge class
+                const attendance = parseFloat(student.attendance_percentage) || 100;
+                let attClass = 'att-high';
+                if (attendance < 75) attClass = 'att-low';
+                else if (attendance < 90) attClass = 'att-medium';
+                
+                // Get first letter for avatar
+                const initial = student.name ? student.name.charAt(0).toUpperCase() : 'S';
+                
+                row.innerHTML = `
+                    <td data-label="Student Name">
+                        <div class="student-cell">
+                            <div class="student-avatar">${initial}</div>
+                            ${student.name || '-'}
+                        </div>
+                    </td>
+                    <td data-label="Department">${student.department || '-'}</td>
+                    <td data-label="Email ID">${student.email || '-'}</td>
+                    <td data-label="Attendance %"><span class="att-badge ${attClass}">${attendance.toFixed(1)}%</span></td>
+                `;
+                tableBody.appendChild(row);
+            });
+        }
+    </script>
 </body>
 </html>

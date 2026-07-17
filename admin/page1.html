@@ -1,217 +1,487 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Leave Approval</title>
+    <!-- Inter font for a clean, modern look -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
-        body {
-            font-family: Arial, sans-serif;
+        /* ===== RESET & VARIABLES ===== */
+        *, *::before, *::after {
+            box-sizing: border-box;
             margin: 0;
             padding: 0;
-            background: linear-gradient(to right, #4A90E2, #9013FE);
         }
+
+        :root {
+            --bg:        #F8FAFC;
+            --card:      #FFFFFF;
+            --border:    #E5E7EB;
+            --primary:   #2563EB;
+            --success:   #16A34A;
+            --danger:    #DC2626;
+            --warning:   #D97706;
+            --text:      #111827;
+            --muted:     #6B7280;
+            --nav-h:     60px;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+        }
+
+        /* ===== TOP NAVIGATION ===== */
         .header {
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            height: var(--nav-h);
+            background: #fff;
+            border-bottom: 1px solid var(--border);
             display: flex;
-            justify-content: space-between;
             align-items: center;
-            margin-bottom: 20px;
-            padding:20px;
+            padding: 0 32px;
+            gap: 16px;
         }
-    .container {
-            width: 80%;
-            margin: 20px auto;
+        .nav-logo {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            text-decoration: none;
+        }
+        .nav-logo-icon {
+            width: 30px;
+            height: 30px;
+            background: var(--primary);
+            border-radius: 7px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .nav-logo-icon svg {
+            width: 17px;
+            height: 17px;
+            fill: none;
+            stroke: #fff;
+            stroke-width: 2;
+            stroke-linecap: round;
+        }
+        .nav-logo-name {
+            font-size: 14px;
+            font-weight: 700;
+            color: var(--text);
+        }
+        .nav-divider {
+            width: 1px;
+            height: 20px;
+            background: var(--border);
+            margin: 0 4px;
+        }
+        .nav-title {
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--muted);
+        }
+        .nav-spacer {
+            flex: 1;
+        }
+        nav a {
+            height: 34px;
+            padding: 0 12px;
+            display: inline-flex;
+            align-items: center;
+            font-size: 13px;
+            font-weight: 500;
+            color: var(--muted);
+            text-decoration: none;
+            border-radius: 7px;
+            transition: background 150ms, color 150ms;
+            gap: 4px;
+        }
+        nav a:hover {
+            background: var(--bg);
+            color: var(--text);
+        }
+        .nav-user {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text);
+        }
+        .nav-avatar {
+            width: 30px;
+            height: 30px;
+            background: #F0FDF4;
+            border-radius: 50%;
+            border: 1px solid #BBF7D0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: 700;
+            color: var(--success);
+        }
+
+        /* ===== MAIN CONTAINER ===== */
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 32px 24px 64px;
+        }
+
+        /* ===== PAGE HEADER ===== */
+        .page-header {
+            margin-bottom: 28px;
+        }
+        .page-header h1 {
+            font-size: 20px;
+            font-weight: 700;
+            letter-spacing: -0.3px;
+        }
+        .page-header p {
+            font-size: 13px;
+            color: var(--muted);
+            margin-top: 4px;
+        }
+
+        /* ===== STAT CARDS ===== */
+        .dashboard-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+            gap: 16px;
+            margin-bottom: 28px;
         }
         .card {
-            background: white;
-            padding: 15px;
-            border-radius: 10px;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-            text-align: center;
-            flex: 1;
-            width:250px;
-            margin: 20px;
-            display:inline-block;
-            font-size: 16px;
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 20px 24px;
         }
-        .leave-request {
-            background-color: lightblue;
-            padding: 20px;
-            margin-bottom: 20px;
-            border-radius: 8px;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        .card p {
+            font-size: 12px;
+            font-weight: 500;
+            color: var(--muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 8px;
         }
+        .card h2 {
+            font-size: 28px;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+            color: var(--text);
+        }
+        .card.accent-blue  { border-left: 3px solid var(--primary); }
+        .card.accent-green { border-left: 3px solid var(--success); }
+        .card.accent-orange{ border-left: 3px solid var(--warning); }
 
-        .leave-request h2 {
-            margin-top: 0;
+        /* ===== SECTION CARD (shared) ===== */
+        .section-card {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            overflow: hidden;
+            margin-bottom: 24px;
         }
-
-        .leave-details {
-            margin-bottom: 20px;
-        }
-
-        .leave-details label {
-            font-weight: bold;
-        }
-
-        .buttons {
+        .section-header {
+            padding: 18px 24px;
+            border-bottom: 1px solid var(--border);
             display: flex;
+            align-items: center;
             justify-content: space-between;
         }
+        .section-header h2 {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text);
+        }
+        .section-header span {
+            font-size: 12px;
+            color: var(--muted);
+        }
 
-        .buttons button {
-            padding: 10px 20px;
-            font-size: 16px;
+        /* ===== QUICK VIEW LEAVE CARD ===== */
+        .leave-request {
+            padding: 24px;
+        }
+        .leave-detail-row {
+            display: grid;
+            grid-template-columns: 160px 1fr;
+            gap: 8px;
+            padding: 10px 0;
+            border-bottom: 1px solid var(--border);
+            align-items: center;
+        }
+        .leave-detail-row:last-of-type {
+            border-bottom: none;
+        }
+        .leave-details label {
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--muted);
+            text-transform: uppercase;
+            letter-spacing: 0.4px;
+        }
+        .leave-details span {
+            font-size: 14px;
+            color: var(--text);
+        }
+        .buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+        .btn-base {
+            height: 44px;
+            padding: 0 20px;
+            border-radius: 10px;
+            font-size: 14px;
+            font-weight: 600;
+            font-family: 'Inter', sans-serif;
             cursor: pointer;
             border: none;
-            border-radius: 5px;
+            transition: background 150ms, opacity 150ms;
         }
-
         .approve {
-            background-color:purple;
-            color: white;
+            background: var(--success);
+            color: #fff;
         }
-
+        .approve:hover { background: #15803D; }
         .reject {
-            background-color: #f44336;
-            color: white;
+            background: var(--danger);
+            color: #fff;
         }
+        .reject:hover { background: #B91C1C; }
 
+        /* ===== TABLE ===== */
         .leave-request-list {
-            margin-top: 40px;
+            padding: 0;
         }
-
-        .leave-request-list table {
-            background-color: linear-gradient(to right, #4A90E2, #9013FE);
+        table {
             width: 100%;
             border-collapse: collapse;
         }
-
-        .leave-request-list table, th, td {
-            border: 1px solid #ddd;
+        thead th {
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            padding: 12px 16px;
+            text-align: left;
+            border-bottom: 1px solid var(--border);
+            background: #FAFAFA;
+        }
+        tbody tr {
+            transition: background 150ms;
+        }
+        tbody tr:hover {
+            background: #F9FAFB;
+        }
+        tbody td {
+            padding: 14px 16px;
+            font-size: 13px;
+            color: var(--text);
+            border-bottom: 1px solid var(--border);
+        }
+        tbody tr:last-child td {
+            border-bottom: none;
         }
 
-        .leave-request-list th, td {
-            padding: 12px;
-            text-align: center;
+        /* table action buttons (small) */
+        tbody .approve, tbody .reject {
+            height: 32px;
+            padding: 0 12px;
+            font-size: 12px;
+            border-radius: 7px;
+        }
+        .action-cell {
+            display: flex;
+            gap: 6px;
         }
 
-        .leave-request-list th {
-            background-color:linear-gradient(to right, #4A90E2, #9013FE);
+        /* ===== STATUS BADGES ===== */
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            height: 22px;
+            padding: 0 9px;
+            border-radius: 100px;
+            font-size: 11px;
+            font-weight: 600;
+        }
+        .badge-pending  { background: #FEF3C7; color: #92400E; }
+        .badge-approved { background: #DCFCE7; color: #14532D; }
+        .badge-rejected { background: #FEE2E2; color: #7F1D1D; }
+
+        /* ===== RESPONSIVE ===== */
+        @media (max-width: 768px) {
+            .header { padding: 0 16px; }
+            .container { padding: 20px 16px 48px; }
+            .leave-detail-row { grid-template-columns: 1fr; gap: 2px; }
+            .buttons { flex-direction: column; }
+            .btn-base { width: 100%; }
+        }
+        @media (max-width: 640px) {
+            .dashboard-cards { grid-template-columns: 1fr 1fr; }
+            .section-header { flex-direction: column; align-items: flex-start; gap: 4px; }
         }
     </style>
 </head>
-
 <body>
 
+    <!-- ===== TOP NAVIGATION ===== -->
     <div class="header">
-        <h1>Welcome Back, James</h1>
+        <a href="#" class="nav-logo">
+            <div class="nav-logo-icon">
+            </div>
+            <span class="nav-logo-name">LeaveMS</span>
+        </a>
+        <div class="nav-divider"></div>
+        <span class="nav-title">Admin</span>
+        <div class="nav-spacer"></div>
         <nav>
-        <a href="details.html">Students</a>
-        <a href="../student/calendar.html">Academic Calendar</a>
+            <a href="details.html">Students</a>
+            <a href="../student/calendar.html">Academic Calendar</a>
         </nav>
-
+        <div class="nav-user">
+            <div class="nav-avatar">J</div>
+            James
+        </div>
     </div>
+
+    <!-- ===== PAGE CONTENT ===== -->
     <div class="container">
 
-    <div class="dashboard-cards">
-        <div class="card">
-            <p>Total Students</p>
-            <h2>1,428</h2>
+        <!-- page header -->
+        <div class="page-header">
+            <h1>Welcome back, <span id="adminName">Admin</span></h1>
+            <p>Review and manage pending leave requests below.</p>
         </div>
-        <div class="card">
-            <p>Total Academic Semester Days</p>
-            <h2>180 Days</h2>
+
+        <!-- summary cards -->
+        <div class="dashboard-cards">
+            <div class="card accent-blue">
+                <p>Total Students</p>
+                <h2 id="totalStudents">0</h2>
+            </div>
+            <div class="card accent-green">
+                <p>Academic Semester Days</p>
+                <h2>180</h2>
+            </div>
+            <div class="card accent-orange">
+                <p>Working Days</p>
+                <h2>100</h2>
+            </div>
         </div>
-        <div class="card">
-            <p>Total Working Days</p>
-            <h2>120 Days</h2>
+
+        <!-- ===== quick-view leave card ===== -->
+        <div class="section-card" id="quickViewCard" style="display: none;">
+            <div class="section-header">
+                <h2>Leave Request Details</h2>
+                <span>Quick view</span>
+            </div>
+            <div class="leave-request">
+                <div class="leave-details">
+                    <div class="leave-detail-row">
+                        <label for="employeeName">Student Name</label>
+                        <span id="employeeName">-</span>
+                    </div>
+                    <div class="leave-detail-row">
+                        <label for="leaveStartDate">Leave Start Date</label>
+                        <span id="leaveStartDate">-</span>
+                    </div>
+                    <div class="leave-detail-row">
+                        <label for="leaveEndDate">Leave End Date</label>
+                        <span id="leaveEndDate">-</span>
+                    </div>
+                    <div class="leave-detail-row">
+                        <label for="leaveReason">Leave Reason</label>
+                        <span id="leaveReason">-</span>
+                    </div>
+                </div>
+                <div class="buttons">
+                    <button class="btn-base approve" id="approveBtn">Approve</button>
+                    <button class="btn-base reject"  id="rejectBtn">Reject</button>
+                </div>
+            </div>
         </div>
+
+        <!-- ===== pending requests table ===== -->
+        <div class="section-card">
+            <div class="section-header">
+                <h2>All Pending Leave Requests</h2>
+                <span>Fetched live</span>
+            </div>
+            <div class="leave-request-list">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Student Name</th>
+                            <th>From Date</th>
+                            <th>To Date</th>
+                            <th>Reason</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="leaveRequestsTableBody">
+                        <!-- rows inserted by JavaScript -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
     </div>
 
-    <div class="container">
-        <div class="leave-request">
-            <h2>Leave Request Details</h2>
-
-            <div class="leave-details">
-                <label for="employeeName">Employee Name:</label>
-                <span id="employeeName">John Doe</span>
-            </div>
-
-            <div class="leave-details">
-                <label for="leaveStartDate">Leave Start Date:</label>
-                <span id="leaveStartDate">2025-03-10</span>
-            </div>
-
-            <div class="leave-details">
-                <label for="leaveEndDate">Leave End Date:</label>
-                <span id="leaveEndDate">2025-03-15</span>
-            </div>
-
-            <div class="leave-details">
-                <label for="leaveReason">Leave Reason:</label>
-                <span id="leaveReason">Personal reason</span>
-            </div>
-
-            <div class="buttons">
-                <button class="approve" id="approveBtn">Approve</button>
-                <button class="reject" id="rejectBtn">Reject</button>
-            </div>
-        </div>
-
-        <div class="leave-request-list">
-            <h3>All Pending Leave Requests</h3>
-            <table border="1">
-                <thead>
-                    <tr>
-                        <th>Student ID</th>
-                        <th>From Date</th>
-                        <th>To Date</th>
-                        <th>Reason</th>
-                        <th>Status</th>
-                        <th>Actions</th>
-                    </tr>
-                </thead>
-                <tbody id="leaveRequestsTableBody"></tbody>
-            </table>
-        </div>
-    </div>
-
+    <!-- ===== JAVASCRIPT (preserved logic, simplified for readability) ===== -->
     <script>
-        // Fetch leave requests from the backend
+        // ----- fetch from backend -----
         async function fetchLeaveRequests() {
-    try {
-        const response = await fetch("http://localhost:3001/api/leave-requests");
-        if (!response.ok) {
-            throw new Error("Server error: " + response.status);
+            try {
+                const response = await fetch("http://localhost:3001/api/leave-requests");
+                if (!response.ok) {
+                    throw new Error("Server error: " + response.status);
+                }
+                const leaveRequests = await response.json();
+                console.log("Fetched leave requests:", leaveRequests);
+                updateAdminTable(leaveRequests);
+            } catch (error) {
+                console.error("Error fetching leave requests:", error);
+            }
         }
-        const leaveRequests = await response.json();
-        console.log("Fetched leave requests:", leaveRequests);
-        updateAdminTable(leaveRequests); // Update table
-    } catch (error) {
-        console.error("Error fetching leave requests:", error);
-    }
-}
-    
-        // Function to display leave requests in the table
-        function displayLeaveRequests(data) {
-            const tableBody = document.getElementById("leaveRequestsBody");
+
+        // ----- update table with data -----
+        function updateAdminTable(leaveRequests) {
+            const tableBody = document.getElementById("leaveRequestsTableBody");
             if (!tableBody) {
-                console.error("Error: Table body with id 'leaveRequestsBody' not found!");
+                console.error("Table body not found!");
                 return;
             }
-    
-            tableBody.innerHTML = ""; // Clear existing rows
-    
-            data.forEach(request => {
+            tableBody.innerHTML = ""; // clear
+
+            leaveRequests.forEach((request) => {
                 const row = document.createElement("tr");
+
+                // build status badge
+                let statusClass = 'badge-pending';
+                let statusText = request.status || 'Pending';
+                if (statusText.toLowerCase() === 'approved') statusClass = 'badge-approved';
+                else if (statusText.toLowerCase() === 'rejected') statusClass = 'badge-rejected';
+
                 row.innerHTML = `
-                    <td>${request.stud_id || "N/A"}</td>
-                    <td>${request.from_date || "N/A"}</td>
-                    <td>${request.to_date || "N/A"}</td>
-                    <td>${request.status || "N/A"}</td>
-                    <td>
+                    <td>${request.student_name || ''}</td>
+                    <td>${request.from_date || ''}</td>
+                    <td>${request.to_date || ''}</td>
+                    <td>${request.reason || ''}</td>
+                    <td><span class="badge ${statusClass}">${statusText}</span></td>
+                    <td class="action-cell">
                         <button class="approve" onclick="updateLeaveStatus(${request.id}, 'Approved')">Approve</button>
                         <button class="reject" onclick="updateLeaveStatus(${request.id}, 'Rejected')">Reject</button>
                     </td>
@@ -219,8 +489,8 @@
                 tableBody.appendChild(row);
             });
         }
-    
-        // Function to update leave request status
+
+        // ----- update status (POST) -----
         async function updateLeaveStatus(id, status) {
             try {
                 const response = await fetch("http://localhost:3001/api/update-leave-status", {
@@ -228,60 +498,38 @@
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({ id, status })
                 });
-    
                 const data = await response.json();
-                alert(data.message);
-                fetchLeaveRequests(); // Refresh the list after update
+                alert(data.message || 'Status updated');
+                fetchLeaveRequests(); // refresh list
             } catch (error) {
                 console.error("Error updating leave status:", error);
             }
         }
 
-        async function fetchLeaveRequests() {
-    try {
-        const response = await fetch("http://localhost:3001/api/leave-requests");
-        const leaveRequests = await response.json();
-        updateAdminTable(leaveRequests); // ✅ This will populate the table
-    } catch (error) {
-        console.error("Error fetching leave requests:", error);
-    }
-}
+        // ----- load on page ready -----
+        document.addEventListener("DOMContentLoaded", function() {
+            const adminName = localStorage.getItem("userName");
+            if (adminName) {
+                document.getElementById("adminName").textContent = adminName;
+            }
+            fetchStudentCount();
+            fetchLeaveRequests();
+        });
 
-        function updateAdminTable(leaveRequests) {
-    const tableBody = document.getElementById("leaveRequestsTableBody");
-
-    if (!tableBody) {
-        console.error("Table body not found!");
-        return;
-    }
-
-    tableBody.innerHTML = ""; // Clear previous rows
-
-    leaveRequests.forEach((request) => {
-        const row = document.createElement("tr");
-
-        row.innerHTML = `
-            <td>${request.id}</td>
-            <td>${request.stud_id}</td>
-            <td>${request.from_date}</td>
-            <td>${request.to_date}</td>
-            <td>${request.reason}</td>
-            <td>${request.status}</td>
-            <td>
-                <button onclick="updateLeaveStatus(${request.id}, 'Approved')">Approve</button>
-                <button onclick="updateLeaveStatus(${request.id}, 'Rejected')">Reject</button>
-            </td>
-        `;
-
-        tableBody.appendChild(row);
-    });
-}
-
-    
-        // Load leave requests when the page loads
-        document.addEventListener("DOMContentLoaded", fetchLeaveRequests);
+        // ----- fetch student count -----
+        async function fetchStudentCount() {
+            try {
+                const response = await fetch("http://localhost:3001/api/student-count");
+                if (!response.ok) {
+                    throw new Error("Server error: " + response.status);
+                }
+                const data = await response.json();
+                document.getElementById("totalStudents").textContent = data.count;
+            } catch (error) {
+                console.error("Error fetching student count:", error);
+            }
+        }
     </script>
 
 </body>
-
 </html>

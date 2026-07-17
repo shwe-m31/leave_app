@@ -3,77 +3,271 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Leave Request Portal</title>
+    <title>Apply for Leave · LeaveMS</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        :root {
+            --bg:        #F8FAFC;
+            --card:      #FFFFFF;
+            --border:    #E5E7EB;
+            --primary:   #2563EB;
+            --primary-h: #1D4ED8;
+            --text:      #111827;
+            --muted:     #6B7280;
+            --input-bg:  #F9FAFB;
+        }
+
         body {
-            font-family: Arial, sans-serif;
-            background: linear-gradient(to right, #4A90E2, #9013FE);
+            font-family: 'Inter', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+        }
+
+        /* ── Top Nav ── */
+        .topnav {
+            height: 60px;
+            background: #fff;
+            border-bottom: 1px solid var(--border);
             display: flex;
-            justify-content: center;
             align-items: center;
-            height: 100vh;
-            margin: 0;
+            padding: 0 32px;
+            gap: 12px;
+        }
+        .topnav-logo { display: flex; align-items: center; gap: 8px; text-decoration: none; }
+        .topnav-logo-icon {
+            width: 30px; height: 30px;
+            background: var(--primary); border-radius: 7px;
+            display: flex; align-items: center; justify-content: center;
+        }
+        .topnav-logo-icon svg { width: 17px; height: 17px; fill: none; stroke: #fff; stroke-width: 2; stroke-linecap: round; }
+        .topnav-logo-name { font-size: 14px; font-weight: 700; color: var(--text); }
+        .topnav-divider { width: 1px; height: 20px; background: var(--border); }
+        .topnav-page { font-size: 14px; font-weight: 500; color: var(--muted); }
+        .topnav-spacer { flex: 1; }
+        .back-link {
+            height: 34px;
+            padding: 0 12px;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 13px;
+            font-weight: 500;
+            color: var(--muted);
+            text-decoration: none;
+            border-radius: 7px;
+            transition: background 150ms, color 150ms;
+        }
+        .back-link:hover { background: var(--bg); color: var(--text); }
+        .back-link svg { width: 14px; height: 14px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; }
+
+        /* ── Page layout ── */
+        .page-center {
+            min-height: calc(100vh - 60px);
+            display: flex;
+            align-items: flex-start;
+            justify-content: center;
+            padding: 48px 24px 80px;
         }
 
+        /* ── Form card ── */
         .container {
-            background: linear-gradient(to right, #4A90E2, #9013FE);
-            padding: 20px;
-            border-radius: 10px;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-            width: 300px;
-            text-align: center;
+            width: 100%;
+            max-width: 520px;
+        }
+        .form-card {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            box-shadow: 0 1px 3px rgba(0,0,0,.06), 0 4px 16px rgba(0,0,0,.06);
+            overflow: hidden;
+        }
+        .form-card-header {
+            padding: 24px 32px 20px;
+            border-bottom: 1px solid var(--border);
+        }
+        .form-card-header h2 {
+            font-size: 18px;
+            font-weight: 700;
+            letter-spacing: -0.3px;
+        }
+        .form-card-header p {
+            font-size: 13px;
+            color: var(--muted);
+            margin-top: 4px;
+        }
+        .form-body {
+            padding: 28px 32px;
         }
 
-        h2 {
+        /* ── Date grid ── */
+        .date-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+        }
+
+        /* ── Field ── */
+        .field {
             margin-bottom: 20px;
         }
-
-        label {
+        .field label {
             display: block;
-            margin: 10px 0 5px;
-            text-align: left;
+            font-size: 13px;
+            font-weight: 500;
+            color: var(--text);
+            margin-bottom: 6px;
         }
-
-        input, textarea {
+        .field .field-hint {
+            font-size: 11px;
+            color: var(--muted);
+            font-weight: 400;
+            margin-left: 4px;
+        }
+        input[type="datetime-local"],
+        textarea {
             width: 100%;
-            padding: 8px;
-            margin-bottom: 10px;
-            border: 1px solid #ccc;
-            border-radius: 5px;
+            padding: 0 14px;
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            font-size: 14px;
+            font-family: 'Inter', sans-serif;
+            background: var(--input-bg);
+            color: var(--text);
+            outline: none;
+            transition: border-color 150ms, box-shadow 150ms;
+            appearance: none;
         }
+        input[type="datetime-local"] {
+            height: 44px;
+        }
+        textarea {
+            padding: 12px 14px;
+            resize: vertical;
+            min-height: 110px;
+            line-height: 1.5;
+        }
+        input[type="datetime-local"]:focus,
+        textarea:focus {
+            border-color: var(--primary);
+            background: #fff;
+            box-shadow: 0 0 0 3px rgba(37,99,235,.12);
+        }
+        input::placeholder, textarea::placeholder { color: #9CA3AF; }
 
-        button {
-            background-color: blue;
-            color: white;
+        /* ── Submit ── */
+        .form-footer {
+            padding: 0 32px 28px;
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+        button[type="submit"] {
+            height: 44px;
+            padding: 0 24px;
+            background: var(--primary);
+            color: #fff;
             border: none;
-            padding: 10px;
-            border-radius: 5px;
+            border-radius: 10px;
+            font-size: 14px;
+            font-weight: 600;
+            font-family: 'Inter', sans-serif;
             cursor: pointer;
-            width: 100%;
+            transition: background 150ms;
         }
+        button[type="submit"]:hover { background: var(--primary-h); }
 
-        button:hover {
-            background-color:grey;
+        /* ── Info note ── */
+        .info-note {
+            display: flex;
+            gap: 10px;
+            align-items: flex-start;
+            background: #EFF6FF;
+            border: 1px solid #BFDBFE;
+            border-radius: 10px;
+            padding: 12px 14px;
+            margin-bottom: 24px;
+            font-size: 13px;
+            color: #1D4ED8;
+            line-height: 1.5;
+        }
+        .info-note svg { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; flex-shrink: 0; margin-top: 1px; }
+
+        /* ── Responsive ── */
+        @media (max-width: 500px) {
+            .date-grid { grid-template-columns: 1fr; }
+            .form-card-header, .form-body, .form-footer { padding-left: 20px; padding-right: 20px; }
+            .topnav { padding: 0 16px; }
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <h2>Leave Request Form</h2>
-        <form id="leaveForm">  <!-- Added id="leaveForm" -->
-            <label for="fromDate">From Date & Time:</label>
-            <input type="datetime-local" id="fromDate" name="fromDate" required>
 
-            <label for="toDate">To Date & Time:</label>
-            <input type="datetime-local" id="toDate" name="toDate" required>
-
-            <label for="reason">Reason:</label>
-            <textarea id="reason" name="reason" rows="4" required></textarea>
-
-            <button type="submit">Submit Request</button>
-        </form>
+    <!-- Top Nav -->
+    <div class="topnav">
+        <a href="#" class="topnav-logo">
+            <div class="topnav-logo-icon">
+                <svg viewBox="0 0 24 24"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="1"/><path d="M9 12h6M9 16h4"/></svg>
+            </div>
+            <span class="topnav-logo-name">LeaveMS</span>
+        </a>
+        <div class="topnav-divider"></div>
+        <span class="topnav-page">Leave Request</span>
+        <div class="topnav-spacer"></div>
+        <a href="student.html" class="back-link">
+            <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
+            Back to Dashboard
+        </a>
     </div>
 
+    <div class="page-center">
+        <div class="container">
+
+            <div class="form-card">
+                <div class="form-card-header">
+                    <h2>Apply for Leave</h2>
+                    <p>Submit a leave request for administrator review.</p>
+                </div>
+
+                <!-- Form — id="leaveForm" preserved, all input ids/names preserved -->
+                <form id="leaveForm">
+                    <div class="form-body">
+
+                        <div class="info-note">
+                            <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                            Your request will be reviewed by an administrator. You'll see the updated status in your Leave History.
+                        </div>
+
+                        <div class="date-grid">
+                            <div class="field">
+                                <label for="fromDate">From Date &amp; Time</label>
+                                <input type="datetime-local" id="fromDate" name="fromDate" required>
+                            </div>
+                            <div class="field">
+                                <label for="toDate">To Date &amp; Time</label>
+                                <input type="datetime-local" id="toDate" name="toDate" required>
+                            </div>
+                        </div>
+
+                        <div class="field">
+                            <label for="reason">Reason <span class="field-hint">Please be specific</span></label>
+                            <textarea id="reason" name="reason" rows="4" placeholder="Describe the reason for your leave request…" required></textarea>
+                        </div>
+
+                    </div>
+                    <div class="form-footer">
+                        <button type="submit">Submit Request</button>
+                        <a href="student.html" class="back-link">Cancel</a>
+                    </div>
+                </form>
+
+            </div>
+        </div>
+    </div>
+
+    <!-- Original JavaScript preserved exactly -->
     <script>
         document.addEventListener("DOMContentLoaded", function () {
             // Ensure the form exists before adding event listener
@@ -96,8 +290,10 @@
                     return;
                 }
     
+                const userId = localStorage.getItem("userId");
+                
                 const requestData = {
-                    stud_id: "222IT211", // Replace with dynamic student ID if needed
+                    stud_id: parseInt(userId), // Use logged-in student ID
                     from_date: fromDate, // ✅ Ensure field name matches backend
                     to_date: toDate,     // ✅ Ensure field name matches backend
                     reason: reason,

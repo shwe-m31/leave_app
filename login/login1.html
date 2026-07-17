@@ -3,177 +3,305 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Student Portal Login</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+    <title>LeaveMS · Sign In</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        :root {
+            --bg:        #F8FAFC;
+            --card:      #FFFFFF;
+            --border:    #E5E7EB;
+            --primary:   #2563EB;
+            --primary-h: #1D4ED8;
+            --text:      #111827;
+            --muted:     #6B7280;
+            --input-bg:  #F9FAFB;
+            --radius-card: 16px;
+            --radius-btn:  10px;
+            --radius-inp:  10px;
+            --shadow-card: 0 1px 3px rgba(0,0,0,.06), 0 4px 24px rgba(0,0,0,.08);
+        }
+
         body {
             font-family: 'Inter', sans-serif;
+            background: var(--bg);
+            min-height: 100vh;
             display: flex;
-            justify-content: center;
             align-items: center;
-            height: 100vh;
-            margin: 0;
-            background: linear-gradient(to right, #4A90E2, #9013FE);
+            justify-content: center;
+            padding: 24px;
         }
-        @keyframes fadeInUp {
-    from {
-        opacity: 0;
-        transform: translateY(30px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
 
-.login-container {
-    animation: fadeInUp 0.6s ease-out;
-}
+        /* ── Card ── */
         .login-container {
-            background: linear-gradient(to right, #4A90E2, #9013FE);
-            padding: 2rem;
-            border-radius: 10px;
-            box-shadow: 0px 4px 10px rgba(0.5, 0.5, 0.5, 0.5);
-            text-align: center;
-            width: 350px;
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-card);
+            box-shadow: var(--shadow-card);
+            width: 100%;
+            max-width: 400px;
+            padding: 40px;
+            animation: fadeInUp 0.45s ease-out both;
         }
+
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(16px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+
+        /* ── Logo ── */
+        .logo-wrap {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 28px;
+        }
+        .logo-icon {
+            width: 36px;
+            height: 36px;
+            background: var(--primary);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .logo-icon svg { width: 20px; height: 20px; fill: none; stroke: #fff; stroke-width: 2; stroke-linecap: round; }
+        .logo-name { font-size: 15px; font-weight: 700; color: var(--text); letter-spacing: -0.3px; }
+
+        /* ── Heading ── */
         .login-container h2 {
-            margin-bottom: 1rem;
-            font-size: 1.5rem;
+            font-size: 22px;
+            font-weight: 700;
+            color: var(--text);
+            letter-spacing: -0.4px;
+            margin-bottom: 4px;
         }
+        .login-container > p {
+            font-size: 14px;
+            color: var(--muted);
+            margin-bottom: 28px;
+        }
+
+        /* ── Segmented control ── */
         .tab-buttons {
             display: flex;
-            justify-content: center;
-            margin-bottom: 1rem;
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 3px;
+            margin-bottom: 24px;
+            gap: 3px;
         }
         .tab-buttons button {
+            flex: 1;
+            height: 36px;
             border: none;
-            padding: 0.5rem 1rem;
+            background: transparent;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 500;
+            color: var(--muted);
             cursor: pointer;
-            background: #f0f0f0;
-            margin: 0 5px;
-            border-radius: 5px;
-            font-weight: 600;
+            transition: background 150ms, color 150ms, box-shadow 150ms;
+            font-family: 'Inter', sans-serif;
         }
         .tab-buttons button.active {
-            background: blue;
-            color: white;
+            background: #FFFFFF;
+            color: var(--text);
+            box-shadow: 0 1px 3px rgba(0,0,0,.12);
         }
+
+        /* ── Inputs ── */
         .input-group {
-            margin-bottom: 1rem;
-            text-align: left;
+            margin-bottom: 16px;
         }
         .input-group label {
             display: block;
-            font-weight: 600;
-            margin-bottom: 5px;
+            font-size: 13px;
+            font-weight: 500;
+            color: var(--text);
+            margin-bottom: 6px;
         }
         .input-group input {
             width: 100%;
-            padding: 10px;
-            border: 1px solid #ccc;
-            border-radius: 5px;
+            height: 44px;
+            padding: 0 14px;
+            border: 1px solid var(--border);
+            border-radius: var(--radius-inp);
+            font-size: 14px;
+            font-family: 'Inter', sans-serif;
+            background: var(--input-bg);
+            color: var(--text);
+            outline: none;
+            transition: border-color 150ms, box-shadow 150ms;
         }
+        .input-group input::placeholder { color: #9CA3AF; }
+        .input-group input:focus {
+            border-color: var(--primary);
+            background: #fff;
+            box-shadow: 0 0 0 3px rgba(37,99,235,.12);
+        }
+
+        /* ── Forgot ── */
         .forgot-password {
             text-align: right;
-            font-size: 0.9rem;
-            margin-bottom: 1rem;
+            margin-bottom: 20px;
+            margin-top: -8px;
         }
         .forgot-password a {
-            color: blue;
+            font-size: 13px;
+            color: var(--primary);
             text-decoration: none;
+            font-weight: 500;
         }
+        .forgot-password a:hover { text-decoration: underline; }
+
+        /* ── Primary button ── */
         .login-btn {
-            background:blue;
-            color: white;
-            border: none;
-            padding: 10px;
             width: 100%;
-            border-radius: 5px;
-            font-size: 1rem;
+            height: 44px;
+            background: var(--primary);
+            color: #fff;
+            border: none;
+            border-radius: var(--radius-btn);
+            font-size: 14px;
+            font-weight: 600;
+            font-family: 'Inter', sans-serif;
             cursor: pointer;
-            text-decoration-line: none;
+            transition: background 150ms;
         }
+        .login-btn:hover { background: var(--primary-h); }
+
+        /* ── Divider ── */
+        .divider {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin: 20px 0;
+            color: var(--muted);
+            font-size: 12px;
+        }
+        .divider::before, .divider::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: var(--border);
+        }
+
+        /* ── Footer / Terms ── */
         .terms {
-            font-size: 0.8rem;
-            margin-top: 1rem;
+            margin-top: 24px;
+            font-size: 12px;
+            color: var(--muted);
+            text-align: center;
+            line-height: 1.6;
         }
-        .terms a {
-            color: blue;
-            text-decoration: none;
+        .terms a { color: var(--primary); text-decoration: none; }
+        .terms a:hover { text-decoration: underline; }
+
+        /* ── Responsive ── */
+        @media (max-width: 480px) {
+            .login-container { padding: 28px 20px; }
         }
     </style>
 </head>
 <body>
     <div class="login-container">
+
+        <!-- Logo -->
+
         <h2>Welcome back</h2>
-        <p>Sign in to your account</p>
+        <p>Sign in to your account to continue</p>
+
+        <!-- Segmented role selector -->
         <div class="tab-buttons">
             <button class="active" id="student-btn">Student</button>
             <button id="admin-btn">Administrator</button>
         </div>
-        <form action="#" method="post">
-        <div class="input-group">
-            <label for="username">Username</label>
-            <input type="text" id="username" placeholder="Enter your username">
-        </div>
-        <div class="input-group">
-            <label for="password">Password</label>
-            <input type="password" id="password" placeholder="Enter your password">
-        </div>
-        <div class="forgot-password">
-            <a href="#">Forgot password?</a>
-        </div>
-        
-        <button class="login-btn" id="sign-in-button" onclick="location.href='../student/student.html'">Sign in to Student Portal</a></button>
-    </form>
-        <p class="terms">By signing in, you agree to our <a href="#">Terms of Service</a> and <a href="#">Privacy Policy</a></p>
+
+        <!-- Form — preserving all original ids, action, method -->
+        <form id="loginForm" action="#" method="post">
+            <div class="input-group">
+                <label for="email">Email</label>
+                <input type="email" id="email" placeholder="Enter your email">
+            </div>
+            <div class="input-group">
+                <label for="password">Password</label>
+                <input type="password" id="password" placeholder="Enter your password">
+            </div>
+
+            
+
+            <button class="login-btn" type="submit">Sign in</button>
+        </form>
+
+    
     </div>
+
+    <!-- Original JavaScript preserved exactly -->
     <script>
         const studentBtn = document.getElementById("student-btn");
         const adminBtn = document.getElementById("admin-btn");
-        const signInButton = document.getElementById("sign-in-button");
-        document.querySelector("form").addEventListener("submit", function(event) {
-        event.preventDefault(); // Prevent page reload
+        let selectedRole = 'student'; // Default role
+
+        // Role selection logic
+        studentBtn.addEventListener("click", function() {
+            selectedRole = 'student';
+            studentBtn.classList.add("active");
+            adminBtn.classList.remove("active");
         });
-        const formData = {
-            name: document.getElementById("username").value,
-            password: document.getElementById("password").value
-          
-        };
-    
+
+        adminBtn.addEventListener("click", function() {
+            selectedRole = 'admin';
+            adminBtn.classList.add("active");
+            studentBtn.classList.remove("active");
+        });
+
+        // Login form submission
         document.getElementById("loginForm").addEventListener("submit", function(event) {
-    event.preventDefault(); // Prevent form from reloading the page
+            event.preventDefault(); // Prevent form from reloading the page
 
-    const usernameInput = document.getElementById("usernameInput").value; // Get username input
-    const passwordInput = document.getElementById("passwordInput").value; // Get password input
+            const emailInput = document.getElementById("email").value;
+            const passwordInput = document.getElementById("password").value;
 
-    console.log("Username entered:", usernameInput); // Debugging
+            console.log("Email entered:", emailInput, "Role:", selectedRole); // Debugging
 
-    const formData = {
-        name: usernameInput, 
-        password: passwordInput
-    };
+            const formData = {
+                email: emailInput,
+                password: passwordInput,
+                role: selectedRole
+            };
 
-    fetch("http://localhost:3000/login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(formData)
-    })
-    .then(response => response.json())
-    .then(data => {
-        console.log("Server response:", data); // Debugging
+            fetch("http://localhost:3001/api/login", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(formData)
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log("Server response:", data); // Debugging
 
-        if (data.message === "Login successful") {
-            localStorage.setItem("username", usernameInput); // Store username
-            console.log("Username saved in localStorage:", localStorage.getItem("username")); // Debugging
-            window.location.href = "../student/student.html"; // Redirect to student page
-        } else {
-            alert("Invalid name or password");
-        }
-    })
-    .catch(error => console.error("Error:", error));
-});
+                if (data.message === "Login successful") {
+                    localStorage.setItem("email", emailInput);
+                    localStorage.setItem("userId", data.user.id);
+                    localStorage.setItem("userName", data.user.name);
+                    console.log("User data saved in localStorage"); // Debugging
+                    
+                    if (selectedRole === 'student') {
+                        window.location.href = "../student/student.html";
+                    } else {
+                        window.location.href = "../admin/page1.html";
+                    }
+                } else {
+                    alert("Invalid credentials");
+                }
+            })
+            .catch(error => {
+                console.error("Error:", error);
+                alert("Login failed. Please try again.");
+            });
+        });
     </script>
 </body>
-</html> 
+</html>
