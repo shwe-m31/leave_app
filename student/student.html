@@ -10,16 +10,16 @@
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
         :root {
-            --bg:        #F8FAFC;
+            --bg:        #F5FAFD;
             --card:      #FFFFFF;
-            --border:    #E5E7EB;
-            --primary:   #2563EB;
-            --primary-h: #1D4ED8;
-            --success:   #16A34A;
-            --danger:    #DC2626;
-            --warning:   #D97706;
-            --text:      #111827;
-            --muted:     #6B7280;
+            --border:    #D8E6F0;
+            --primary:   #005B96;
+            --primary-h: #03396C;
+            --success:   #28A745;
+            --danger:    #DC3545;
+            --warning:   #FFC107;
+            --text:      #011F4B;
+            --muted:     #444444;
             --nav-h:     60px;
         }
 
@@ -278,8 +278,9 @@
             <a href="calendar.html">Academic Calendar</a>
         </nav>
         <div class="topnav-user">
-            <div class="topnav-avatar">S</div>
-            <span id="username">Student</span>
+            <div class="topnav-avatar" id="navAvatar">S</div>
+            <span id="navUserName">Student</span>
+            <button onclick="logout()" style="margin-left: 12px; height: 32px; padding: 0 12px; border: 1px solid var(--border); border-radius: 7px; background: #fff; color: var(--muted); font-size: 12px; font-weight: 500; cursor: pointer; transition: background 150ms, color 150ms;">Logout</button>
         </div>
     </header>
 
@@ -355,8 +356,20 @@
             <!-- Leave History Table -->
             <div class="card">
                 <div class="card-header">
-                    <h3>Student Leave History</h3>
-                    <span style="font-size:12px;color:var(--muted);">All leave requests</span>
+                    <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px;">
+                        <div>
+                            <h3>Student Leave History</h3>
+                            <span style="font-size:12px;color:var(--muted);">All leave requests</span>
+                        </div>
+                        <select id="yearFilter" style="padding: 6px 10px; border: 1px solid var(--border); border-radius: 6px; font-size: 12px; font-family: 'Inter', sans-serif; background: #fff; color: var(--text); cursor: pointer;">
+                            <option value="all">All Years</option>
+                            <option value="2024">2024</option>
+                            <option value="2025">2025</option>
+                            <option value="2026" selected>2026</option>
+                            <option value="2027">2027</option>
+                            <option value="2028">2028</option>
+                        </select>
+                    </div>
                 </div>
                 <table>
                     <thead>
@@ -397,13 +410,28 @@
             
             if (userName) {
                 document.getElementById("username").textContent = userName;
+                document.getElementById("navUserName").textContent = userName;
+                document.getElementById("navAvatar").textContent = userName.charAt(0).toUpperCase();
             }
             
             if (userId) {
                 fetchStudentProfile(userId);
                 fetchLeaveHistory(userId);
             }
+            
+            // Add year filter event listener
+            document.getElementById('yearFilter').addEventListener('change', function() {
+                if (userId) {
+                    fetchLeaveHistory(userId);
+                }
+            });
         });
+
+        // Logout function
+        function logout() {
+            localStorage.clear();
+            window.location.href = "../login/login1.html";
+        }
 
         // Fetch Student Profile
         async function fetchStudentProfile(userId) {
@@ -435,15 +463,16 @@
             document.getElementById("attendancePercentage").textContent = attendancePercent.toFixed(1) + "%";
             
             const workingDays = 100;
-            const daysAbsent = Math.round(workingDays - (attendancePercent / 100 * workingDays));
+            const presentDays = Math.round((attendancePercent / 100) * workingDays);
+            const daysAbsent = workingDays - presentDays;
             document.getElementById("daysAbsent").textContent = daysAbsent;
             
-            // Update pie chart
-            updatePieChart(attendancePercent, daysAbsent);
+            // Update pie chart with actual days
+            updatePieChart(presentDays, daysAbsent);
         }
 
         // Update Pie Chart
-        function updatePieChart(attendance, absent) {
+        function updatePieChart(presentDays, absentDays) {
             const ctx = document.getElementById('attendanceChart').getContext('2d');
             
             if (attendanceChart) {
@@ -455,7 +484,7 @@
                 data: {
                     labels: ['Present Days', 'Absent Days'],
                     datasets: [{
-                        data: [attendance, absent],
+                        data: [presentDays, absentDays],
                         backgroundColor: ['#16A34A', '#DC2626']
                     }]
                 },
@@ -479,7 +508,13 @@
         // Fetch Leave History from Backend
         async function fetchLeaveHistory(userId) {
             try {
-                const response = await fetch(`http://localhost:3001/api/student-leave-history?userId=${userId}`);
+                const yearFilter = document.getElementById('yearFilter').value;
+                let url = `http://localhost:3001/api/student-leave-history?userId=${userId}`;
+                if (yearFilter !== 'all') {
+                    url += `&year=${yearFilter}`;
+                }
+                
+                const response = await fetch(url);
                 if (!response.ok) {
                     throw new Error("Failed to fetch leave history");
                 }

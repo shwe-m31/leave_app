@@ -15,15 +15,15 @@
         }
 
         :root {
-            --bg:        #F8FAFC;
+            --bg:        #F5FAFD;
             --card:      #FFFFFF;
-            --border:    #E5E7EB;
-            --primary:   #2563EB;
-            --success:   #16A34A;
-            --danger:    #DC2626;
-            --warning:   #D97706;
-            --text:      #111827;
-            --muted:     #6B7280;
+            --border:    #D8E6F0;
+            --primary:   #005B96;
+            --success:   #28A745;
+            --danger:    #DC3545;
+            --warning:   #FFC107;
+            --text:      #011F4B;
+            --muted:     #444444;
             --nav-h:     60px;
         }
 
@@ -341,18 +341,18 @@
         <a href="#" class="nav-logo">
             <div class="nav-logo-icon">
             </div>
-            <span class="nav-logo-name">LeaveMS</span>
         </a>
         <div class="nav-divider"></div>
         <span class="nav-title">Admin</span>
         <div class="nav-spacer"></div>
         <nav>
             <a href="details.html">Students</a>
-            <a href="../student/calendar.html">Academic Calendar</a>
+            <a href="calendar.html">Academic Calendar</a>
         </nav>
         <div class="nav-user">
-            <div class="nav-avatar">J</div>
-            James
+            <div class="nav-avatar" id="navAvatar">P</div>
+            <span id="navUserName">Admin</span>
+            <button onclick="logout()" style="margin-left: 12px; height: 32px; padding: 0 12px; border: 1px solid var(--border); border-radius: 7px; background: #fff; color: var(--muted); font-size: 12px; font-weight: 500; cursor: pointer; transition: background 150ms, color 150ms;">Logout</button>
         </div>
     </div>
 
@@ -511,10 +511,18 @@
             const adminName = localStorage.getItem("userName");
             if (adminName) {
                 document.getElementById("adminName").textContent = adminName;
+                document.getElementById("navUserName").textContent = adminName;
+                document.getElementById("navAvatar").textContent = adminName.charAt(0).toUpperCase();
             }
             fetchStudentCount();
             fetchLeaveRequests();
         });
+
+        // ----- logout function -----
+        function logout() {
+            localStorage.clear();
+            window.location.href = "../login/login1.html";
+        }
 
         // ----- fetch student count -----
         async function fetchStudentCount() {

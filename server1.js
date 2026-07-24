@@ -139,16 +139,25 @@ app.post('/api/update-leave-status', (req, res) => {
                 const toDate = new Date(leaveRequest.to_date);
                 const daysAbsent = Math.ceil((toDate - fromDate) / (1000 * 60 * 60 * 24)) + 1;
                 
-                // Assuming 100 working days as base
-                const workingDays = 100;
-                const currentAttendance = leaveRequest.attendance_percentage || 100;
-                const newAttendance = Math.max(0, ((workingDays - daysAbsent) / workingDays) * 100);
-                
-                const updateAttendanceSql = "UPDATE users SET attendance_percentage = ? WHERE id = ?";
-                db.query(updateAttendanceSql, [newAttendance, leaveRequest.stud_id], (err) => {
+                // Get student's current attendance
+                const getStudentSql = "SELECT attendance_percentage FROM users WHERE id = ?";
+                db.query(getStudentSql, [leaveRequest.stud_id], (err, studentResults) => {
                     if (err) {
-                        console.error('Error updating attendance:', err);
+                        console.error('Error fetching student attendance:', err);
+                        return;
                     }
+                    
+                    const currentAttendance = studentResults[0]?.attendance_percentage || 100;
+                    const workingDays = 100;
+                    const attendanceReduction = (daysAbsent / workingDays) * 100;
+                    const newAttendance = Math.max(0, currentAttendance - attendanceReduction);
+                    
+                    const updateAttendanceSql = "UPDATE users SET attendance_percentage = ? WHERE id = ?";
+                    db.query(updateAttendanceSql, [newAttendance, leaveRequest.stud_id], (err) => {
+                        if (err) {
+                            console.error('Error updating attendance:', err);
+                        }
+                    });
                 });
             }
             
@@ -181,9 +190,19 @@ app.post('/api/submit-leave', (req, res) => {
 // Get student leave history (all statuses)
 app.get('/api/student-leave-history', (req, res) => {
     const userId = req.query.userId;
-    const sql = "SELECT * FROM leave_requests WHERE stud_id = ? ORDER BY created_at DESC";
+    const year = req.query.year;
     
-    db.query(sql, [userId], (err, results) => {
+    let sql = "SELECT * FROM leave_requests WHERE stud_id = ?";
+    const params = [userId];
+    
+    if (year && year !== 'all') {
+        sql += " AND YEAR(from_date) = ?";
+        params.push(year);
+    }
+    
+    sql += " ORDER BY created_at DESC";
+    
+    db.query(sql, params, (err, results) => {
         if (err) {
             console.error('Error fetching leave history:', err);
             res.status(500).json({ error: 'Internal server error' });

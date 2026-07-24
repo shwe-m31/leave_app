@@ -9,15 +9,15 @@
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
         :root {
-            --bg:      #F8FAFC;
+            --bg:      #F5FAFD;
             --card:    #FFFFFF;
-            --border:  #E5E7EB;
-            --primary: #2563EB;
-            --success: #16A34A;
-            --warning: #D97706;
-            --danger:  #DC2626;
-            --text:    #111827;
-            --muted:   #6B7280;
+            --border:  #D8E6F0;
+            --primary: #005B96;
+            --success: #28A745;
+            --warning: #FFC107;
+            --danger:  #DC3545;
+            --text:    #011F4B;
+            --muted:   #444444;
         }
 
         body {
@@ -234,9 +234,7 @@
     <div class="topnav">
         <a href="page1.html" class="topnav-logo">
             <div class="nav-icon">
-                <svg viewBox="0 0 24 24"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="1"/><path d="M9 12h6M9 16h4"/></svg>
             </div>
-            <span class="nav-logo-name">LeaveMS</span>
         </a>
         <div class="nav-div"></div>
         <span class="nav-page">Students</span>
@@ -254,7 +252,7 @@
             <h2>Student Details</h2>
             <div class="search-wrap">
                 <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-                <input type="text" class="search-input" placeholder="Search students…">
+                <input type="text" class="search-input" id="searchInput" placeholder="Search students…" oninput="filterStudents()">
             </div>
         </div>
 
@@ -284,6 +282,8 @@
 
     <!-- JavaScript to fetch students from database -->
     <script>
+        let allStudents = [];
+
         document.addEventListener("DOMContentLoaded", function() {
             fetchStudents();
         });
@@ -296,10 +296,21 @@
                 }
                 const students = await response.json();
                 console.log("Fetched students:", students);
+                allStudents = students;
                 updateStudentsTable(students);
             } catch (error) {
                 console.error("Error fetching students:", error);
             }
+        }
+
+        function filterStudents() {
+            const searchTerm = document.getElementById("searchInput").value.toLowerCase();
+            const filteredStudents = allStudents.filter(student => 
+                (student.name && student.name.toLowerCase().includes(searchTerm)) ||
+                (student.email && student.email.toLowerCase().includes(searchTerm)) ||
+                (student.department && student.department.toLowerCase().includes(searchTerm))
+            );
+            updateStudentsTable(filteredStudents);
         }
 
         function updateStudentsTable(students) {
