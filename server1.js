@@ -12,9 +12,9 @@ app.use(express.static(path.join(__dirname)));
 const db = mysql.createConnection({
     host: '127.0.0.1',
     user: 'root',
-    password: '',
+    password: 'Sql@3306',
     database: 'leave_db',
-    port:3307
+    port:3306
 });
 
 db.connect(err => {

@@ -453,6 +453,23 @@
             }
         }
 
+// ----- format date and time -----
+function formatDateTime(dateString) {
+    if (!dateString) return '';
+
+    const date = new Date(dateString);
+
+    if (isNaN(date.getTime())) return dateString;
+
+    return date.toLocaleString('en-IN', {
+        day: '2-digit',
+        month: '2-digit',
+        year: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
+        hour12: true
+    });
+}
         // ----- update table with data -----
         function updateAdminTable(leaveRequests) {
             const tableBody = document.getElementById("leaveRequestsTableBody");
@@ -473,8 +490,8 @@
 
                 row.innerHTML = `
                     <td>${request.student_name || ''}</td>
-                    <td>${request.from_date || ''}</td>
-                    <td>${request.to_date || ''}</td>
+                    <td>${formatDateTime(request.from_date)}</td>
+                    <td>${formatDateTime(request.to_date)}</td>
                     <td>${request.reason || ''}</td>
                     <td><span class="badge ${statusClass}">${statusText}</span></td>
                     <td class="action-cell">
