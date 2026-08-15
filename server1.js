@@ -118,7 +118,7 @@ app.post('/api/login', (req, res) => {
 // Get student profile data
 app.get('/api/student-profile', (req, res) => {
     const userId = req.query.userId;
-    const sql = "SELECT id, name, email, department, attendance_percentage, admin_name FROM users WHERE id = ?";
+    const sql = "SELECT id, name, email, department, admin_name FROM users WHERE id = ?";
     
     db.query(sql, [userId], (err, results) => {
         if (err) {
@@ -158,16 +158,39 @@ app.get('/api/student-count', (req, res) => {
     });
 });
 
-// Fetch All Pending Leave Requests
+// Fetch All Leave Requests for Admin (all statuses, sorted by created_at DESC)
 app.get('/api/leave-requests', (req, res) => {
-    const sql = "SELECT lr.*, u.name as student_name FROM leave_requests lr JOIN users u ON lr.stud_id = u.id WHERE lr.status = 'Pending'";
+    const sql = "SELECT lr.*, u.name as student_name FROM leave_requests lr JOIN users u ON lr.stud_id = u.id ORDER BY lr.created_at DESC";
     
     db.query(sql, (err, results) => {
         if (err) {
             console.error('Error fetching leave requests:', err.message);
             res.status(500).json({ error: 'Internal server error' });
         } else {
-            res.json(results);
+            // Add Time Expired status for pending requests whose leave period has passed
+            const today = new Date();
+            const processedResults = results.map(request => {
+                let processedRequest = { ...request };
+                
+                if (request.status === 'Pending') {
+                    const toDate = new Date(request.to_date);
+                    // If the leave period has already passed, mark as Time Expired
+                    if (toDate < today) {
+                        processedRequest.displayStatus = 'TIME EXPIRED';
+                        processedRequest.expired = true;
+                    } else {
+                        processedRequest.displayStatus = request.status;
+                        processedRequest.expired = false;
+                    }
+                } else {
+                    processedRequest.displayStatus = request.status;
+                    processedRequest.expired = false;
+                }
+                
+                return processedRequest;
+            });
+            
+            res.json(processedResults);
         }
     });
 });
@@ -176,60 +199,120 @@ app.get('/api/leave-requests', (req, res) => {
 app.post('/api/update-leave-status', (req, res) => {
     const { id, status } = req.body;
     
-    // First, get the leave request details to calculate attendance
-    const getLeaveSql = "SELECT * FROM leave_requests WHERE id = ?";
-    db.query(getLeaveSql, [id], (err, results) => {
+    // Update leave status
+    const updateSql = "UPDATE leave_requests SET status = ? WHERE id = ?";
+    db.query(updateSql, [status, id], (err, result) => {
         if (err) {
-            console.error('Error fetching leave request:', err.message);
+            console.error('Error updating leave request status:', err.message);
             res.status(500).json({ error: 'Internal server error' });
             return;
         }
         
-        if (results.length === 0) {
-            res.status(404).json({ error: 'Leave request not found' });
-            return;
-        }
-        
-        const leaveRequest = results[0];
-        
-        // Update leave status
-        const updateSql = "UPDATE leave_requests SET status = ? WHERE id = ?";
-        db.query(updateSql, [status, id], (err, result) => {
+        // Recalculate attendance for the student based on all approved leaves
+        const getLeaveSql = "SELECT stud_id FROM leave_requests WHERE id = ?";
+        db.query(getLeaveSql, [id], (err, results) => {
             if (err) {
-                console.error('Error updating leave request status:', err.message);
-                res.status(500).json({ error: 'Internal server error' });
+                console.error('Error fetching leave request:', err.message);
                 return;
             }
             
-            // If approved, update attendance
-            if (status === 'Approved') {
-                const fromDate = new Date(leaveRequest.from_date);
-                const toDate = new Date(leaveRequest.to_date);
-                const daysAbsent = Math.ceil((toDate - fromDate) / (1000 * 60 * 60 * 24)) + 1;
-                
-                // Get student's current attendance
-                const getStudentSql = "SELECT attendance_percentage FROM users WHERE id = ?";
-                db.query(getStudentSql, [leaveRequest.stud_id], (err, studentResults) => {
-                    if (err) {
-                        console.error('Error fetching student attendance:', err.message);
-                        return;
-                    }
-                    
-                    const currentAttendance = studentResults[0]?.attendance_percentage || 100;
-                    const workingDays = 100;
-                    const attendanceReduction = (daysAbsent / workingDays) * 100;
-                    const newAttendance = Math.max(0, currentAttendance - attendanceReduction);
-                    
-                    const updateAttendanceSql = "UPDATE users SET attendance_percentage = ? WHERE id = ?";
-                    db.query(updateAttendanceSql, [newAttendance, leaveRequest.stud_id], (err) => {
-                        if (err) {
-                            console.error('Error updating attendance:', err.message);
-                        }
-                    });
-                });
+            if (results.length === 0) {
+                res.json({ message: 'Leave request updated successfully' });
+                return;
             }
             
-            res.json({ message: 'Leave request updated successfully' });
+            const studId = results[0].stud_id;
+            
+            // Get all approved leave requests for this student
+            const getAllApprovedSql = "SELECT * FROM leave_requests WHERE stud_id = ? AND status = 'Approved'";
+            db.query(getAllApprovedSql, [studId], (err, approvedResults) => {
+                if (err) {
+                    console.error('Error fetching approved leaves:', err.message);
+                    return;
+                }
+                
+                // Calculate total days absent from all approved leaves
+                let totalDaysAbsent = 0;
+                approvedResults.forEach(request => {
+                    const fromDate = new Date(request.from_date);
+                    const toDate = new Date(request.to_date);
+                    const leaveDays = Math.ceil((toDate - fromDate) / (1000 * 60 * 60 * 24)) + 1;
+                    totalDaysAbsent += leaveDays;
+                });
+                
+                // Calculate new attendance
+                const workingDays = 100;
+                const attendanceDays = Math.max(0, workingDays - totalDaysAbsent);
+                const newAttendance = (attendanceDays / workingDays) * 100;
+                
+                // Update student's attendance
+                const updateAttendanceSql = "UPDATE users SET attendance_percentage = ? WHERE id = ?";
+                db.query(updateAttendanceSql, [newAttendance, studId], (err) => {
+                    if (err) {
+                        console.error('Error updating attendance:', err.message);
+                    }
+                });
+            });
+        });
+        
+        res.json({ message: 'Leave request updated successfully' });
+    });
+});
+
+// Get student attendance data for specific academic year
+app.get('/api/student-attendance-data', (req, res) => {
+    const userId = req.query.userId;
+    const academicYear = req.query.academicYear;
+    
+    // Academic year configuration
+    const academicYearConfig = {
+        '2024-2025': { start: '2024-08-01', end: '2025-06-30', semesterDays: 180, workingDays: 100 },
+        '2025-2026': { start: '2025-08-01', end: '2026-05-31', semesterDays: 180, workingDays: 100 },
+        '2026-2027': { start: '2026-08-01', end: '2027-05-31', semesterDays: 180, workingDays: 100 }
+    };
+    
+    const config = academicYearConfig[academicYear] || academicYearConfig['2026-2027'];
+    
+    // Get approved leave requests for the academic year
+    let sql = "SELECT * FROM leave_requests WHERE stud_id = ? AND status = 'Approved'";
+    const params = [userId];
+    
+    if (academicYear && academicYear !== 'all') {
+        const [startYear, endYear] = academicYear.split('-').map(Number);
+        const startDate = `${startYear}-08-01`;
+        const endDate = `${endYear}-06-30`;
+        
+        sql += " AND from_date >= ? AND from_date <= ?";
+        params.push(startDate, endDate);
+    }
+    
+    db.query(sql, params, (err, results) => {
+        if (err) {
+            console.error('Error fetching leave requests:', err.message);
+            res.status(500).json({ error: 'Internal server error' });
+            return;
+        }
+        
+        // Calculate days absent from approved leave
+        let daysAbsent = 0;
+        results.forEach(request => {
+            const fromDate = new Date(request.from_date);
+            const toDate = new Date(request.to_date);
+            const leaveDays = Math.ceil((toDate - fromDate) / (1000 * 60 * 60 * 24)) + 1;
+            daysAbsent += leaveDays;
+        });
+        
+        // Calculate attendance
+        const workingDays = config.workingDays;
+        const attendanceDays = Math.max(0, workingDays - daysAbsent);
+        const attendancePercentage = (attendanceDays / workingDays) * 100;
+        
+        res.json({
+            semesterDays: config.semesterDays,
+            workingDays: workingDays,
+            daysAbsent: daysAbsent,
+            attendanceDays: attendanceDays,
+            attendancePercentage: attendancePercentage
         });
     });
 });
@@ -258,14 +341,19 @@ app.post('/api/submit-leave', (req, res) => {
 // Get student leave history (all statuses)
 app.get('/api/student-leave-history', (req, res) => {
     const userId = req.query.userId;
-    const year = req.query.year;
+    const academicYear = req.query.academicYear;
     
     let sql = "SELECT * FROM leave_requests WHERE stud_id = ?";
     const params = [userId];
     
-    if (year && year !== 'all') {
-        sql += " AND YEAR(from_date) = ?";
-        params.push(year);
+    if (academicYear && academicYear !== 'all') {
+        // Academic year filtering based on academic year boundaries
+        const [startYear, endYear] = academicYear.split('-').map(Number);
+        const startDate = `${startYear}-08-01`;
+        const endDate = `${endYear}-06-30`;
+        
+        sql += " AND from_date >= ? AND from_date <= ?";
+        params.push(startDate, endDate);
     }
     
     sql += " ORDER BY created_at DESC";
@@ -277,6 +365,64 @@ app.get('/api/student-leave-history', (req, res) => {
         } else {
             res.json(results);
         }
+    });
+});
+
+// Get academic year attendance data for student
+app.get('/api/student-attendance-data', (req, res) => {
+    const userId = req.query.userId;
+    const academicYear = req.query.academicYear;
+    
+    // Academic year configuration
+    const academicYearConfig = {
+        '2024-2025': { start: '2024-08-01', end: '2025-06-30', semesterDays: 180, workingDays: 100 },
+        '2025-2026': { start: '2025-08-01', end: '2026-05-31', semesterDays: 180, workingDays: 100 },
+        '2026-2027': { start: '2026-08-01', end: '2027-05-31', semesterDays: 180, workingDays: 100 }
+    };
+    
+    const config = academicYearConfig[academicYear] || academicYearConfig['2026-2027'];
+    
+    // Get approved leave requests for the academic year
+    let sql = "SELECT * FROM leave_requests WHERE stud_id = ? AND status = 'Approved'";
+    const params = [userId];
+    
+    if (academicYear && academicYear !== 'all') {
+        const [startYear, endYear] = academicYear.split('-').map(Number);
+        const startDate = `${startYear}-08-01`;
+        const endDate = `${endYear}-06-30`;
+        
+        sql += " AND from_date >= ? AND from_date <= ?";
+        params.push(startDate, endDate);
+    }
+    
+    db.query(sql, params, (err, results) => {
+        if (err) {
+            console.error('Error fetching leave requests:', err.message);
+            res.status(500).json({ error: 'Internal server error' });
+            return;
+        }
+        
+        // Calculate days absent from approved leave
+        let daysAbsent = 0;
+        results.forEach(request => {
+            const fromDate = new Date(request.from_date);
+            const toDate = new Date(request.to_date);
+            const leaveDays = Math.ceil((toDate - fromDate) / (1000 * 60 * 60 * 24)) + 1;
+            daysAbsent += leaveDays;
+        });
+        
+        // Calculate attendance
+        const workingDays = config.workingDays;
+        const attendanceDays = Math.max(0, workingDays - daysAbsent);
+        const attendancePercentage = (attendanceDays / workingDays) * 100;
+        
+        res.json({
+            semesterDays: config.semesterDays,
+            workingDays: workingDays,
+            daysAbsent: daysAbsent,
+            attendanceDays: attendanceDays,
+            attendancePercentage: attendancePercentage
+        });
     });
 });
 

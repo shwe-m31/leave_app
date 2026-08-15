@@ -329,12 +329,12 @@
         <div class="stats-grid">
             <div class="stat-card accent-blue">
                 <div class="stat-label">Semester Days</div>
-                <div class="stat-value">180</div>
+                <div class="stat-value" id="semesterDays">180</div>
                 <div class="stat-sub">Total academic days</div>
             </div>
             <div class="stat-card accent-orange">
                 <div class="stat-label">Working Days</div>
-                <div class="stat-value">100</div>
+                <div class="stat-value" id="workingDays">100</div>
                 <div class="stat-sub">Scheduled instruction days</div>
             </div>
             <div class="stat-card accent-green">
@@ -349,25 +349,27 @@
             </div>
         </div>
 
+        <!-- Academic Year Filter -->
+        <div style="display: flex; justify-content: flex-end; margin-bottom: 20px;">
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <label for="academicYearFilter" style="font-size: 14px; font-weight: 500; color: var(--text);">Select Academic Year:</label>
+                <select id="academicYearFilter" style="padding: 8px 12px; border: 1px solid var(--border); border-radius: 6px; font-size: 14px; font-family: 'Inter', sans-serif; background: #fff; color: var(--text); cursor: pointer;">
+                    <option value="2024-2025">2024-2025</option>
+                    <option value="2025-2026">2025-2026</option>
+                    <option value="2026-2027" selected>2026-2027</option>
+                </select>
+            </div>
+        </div>
+
         <!-- Main Grid -->
         <div class="main-grid">
 
             <!-- Leave History Table -->
             <div class="card">
                 <div class="card-header">
-                    <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px;">
-                        <div>
-                            <h3>Student Leave History</h3>
-                            <span style="font-size:12px;color:var(--muted);">All leave requests</span>
-                        </div>
-                        <select id="yearFilter" style="padding: 6px 10px; border: 1px solid var(--border); border-radius: 6px; font-size: 12px; font-family: 'Inter', sans-serif; background: #fff; color: var(--text); cursor: pointer;">
-                            <option value="all">All Years</option>
-                            <option value="2024">2024</option>
-                            <option value="2025">2025</option>
-                            <option value="2026" selected>2026</option>
-                            <option value="2027">2027</option>
-                            <option value="2028">2028</option>
-                        </select>
+                    <div>
+                        <h3>Student Leave History</h3>
+                        <span style="font-size:12px;color:var(--muted);">Academic year specific leave requests</span>
                     </div>
                 </div>
                 <table>
@@ -417,12 +419,14 @@
             if (userId) {
                 fetchStudentProfile(userId);
                 fetchLeaveHistory(userId);
+                fetchAcademicYearData(userId);
             }
             
-            // Add year filter event listener
-            document.getElementById('yearFilter').addEventListener('change', function() {
+            // Add academic year filter event listener
+            document.getElementById('academicYearFilter').addEventListener('change', function() {
                 if (userId) {
                     fetchLeaveHistory(userId);
+                    fetchAcademicYearData(userId);
                 }
             });
         });
@@ -444,7 +448,6 @@
                 const profile = await response.json();
                 console.log("Fetched student profile:", profile);
                 updateProfileDisplay(profile);
-                updateAttendanceDisplay(profile.attendance_percentage);
             } catch (error) {
                 console.error("Error fetching student profile:", error);
             }
@@ -461,15 +464,33 @@
         // Update Attendance Display
         function updateAttendanceDisplay(attendance) {
             const attendancePercent = parseFloat(attendance) || 100;
-            document.getElementById("attendancePercentage").textContent = attendancePercent.toFixed(1) + "%";
-            
-            const workingDays = 100;
-            const presentDays = Math.round((attendancePercent / 100) * workingDays);
-            const daysAbsent = workingDays - presentDays;
-            document.getElementById("daysAbsent").textContent = daysAbsent;
-            
-            // Update pie chart with actual days
-            updatePieChart(presentDays, daysAbsent);
+            document.getElementById("attendancePercentage").textContent = attendancePercent.toFixed(2) + "%";
+        }
+
+        // Fetch Academic Year Data
+        async function fetchAcademicYearData(userId) {
+            try {
+                const academicYear = document.getElementById('academicYearFilter').value;
+                const apiUrl = API_CONFIG.getBaseUrl() + `/api/student-attendance-data?userId=${userId}&academicYear=${academicYear}`;
+                
+                const response = await fetch(apiUrl);
+                if (!response.ok) {
+                    throw new Error("Failed to fetch academic year data");
+                }
+                const data = await response.json();
+                console.log("Fetched academic year data:", data);
+                
+                // Update dashboard cards with dynamic data
+                document.getElementById("semesterDays").textContent = data.semesterDays;
+                document.getElementById("workingDays").textContent = data.workingDays;
+                document.getElementById("attendancePercentage").textContent = data.attendancePercentage.toFixed(2) + "%";
+                document.getElementById("daysAbsent").textContent = data.daysAbsent;
+                
+                // Update pie chart with actual days
+                updatePieChart(data.attendanceDays, data.daysAbsent);
+            } catch (error) {
+                console.error("Error fetching academic year data:", error);
+            }
         }
 
         // Update Pie Chart
@@ -509,11 +530,8 @@
         // Fetch Leave History from Backend
         async function fetchLeaveHistory(userId) {
             try {
-                const yearFilter = document.getElementById('yearFilter').value;
-                let apiUrl = API_CONFIG.getBaseUrl() + `/api/student-leave-history?userId=${userId}`;
-                if (yearFilter !== 'all') {
-                    apiUrl += `&year=${yearFilter}`;
-                }
+                const academicYear = document.getElementById('academicYearFilter').value;
+                const apiUrl = API_CONFIG.getBaseUrl() + `/api/student-leave-history?userId=${userId}&academicYear=${academicYear}`;
                 
                 const response = await fetch(apiUrl);
                 if (!response.ok) {
@@ -552,7 +570,7 @@
                 
                 // Status badge class
                 let statusClass = 'badge-pending';
-                const statusText = request.status || 'Pending';
+                let statusText = request.status || 'Pending';
                 if (statusText.toLowerCase() === 'approved') statusClass = 'badge-approved';
                 else if (statusText.toLowerCase() === 'rejected') statusClass = 'badge-rejected';
                 

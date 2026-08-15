@@ -103,15 +103,25 @@ INSERT IGNORE INTO `users` (`name`, `email`, `password`, `role`, `department`, `
 ('Preeti Chawla', 'preeti.chawla@example.com', 'student123', 'student', 'Civil Engineering', 95.00, 'Priya');
 
 -- ============================================================
---  SEED DATA: Sample leave requests
+--  SEED DATA: Sample leave requests with realistic statuses
 -- ============================================================
 INSERT IGNORE INTO `leave_requests` (`stud_id`, `from_date`, `to_date`, `reason`, `status`) VALUES
 (2, '2025-03-10', '2025-03-12', 'Family function', 'Approved'),
 (3, '2025-03-15', '2025-03-15', 'Medical appointment', 'Pending'),
 (4, '2025-03-20', '2025-03-22', 'Personal emergency', 'Rejected'),
-(5, '2025-03-25', '2025-03-26', 'Attending a seminar', 'Pending'),
-(6, '2025-04-01', '2025-04-02', 'Family wedding', 'Approved'),
+(5, '2025-03-25', '2025-03-26', 'Attending a seminar', 'Approved'),
+(6, '2025-04-01', '2025-04-02', 'Family wedding', 'Rejected'),
 (7, '2025-04-05', '2025-04-05', 'Doctor appointment', 'Pending'),
-(8, '2025-04-10', '2025-04-12', 'Out of station', 'Pending'),
+(8, '2025-04-10', '2025-04-12', 'Out of station', 'Approved'),
 (9, '2025-04-15', '2025-04-15', 'Health issues', 'Rejected'),
-(10, '2025-04-20', '2025-04-21', 'Personal work', 'Approved');
+(10, '2025-04-20', '2025-04-21', 'Personal work', 'Pending'),
+(11, '2025-05-01', '2025-05-03', 'Conference attendance', 'Approved'),
+(12, '2025-05-10', '2025-05-10', 'Family emergency', 'Rejected'),
+(13, '2025-05-15', '2025-05-17', 'Personal work', 'Pending'),
+(14, '2025-05-20', '2025-05-20', 'Medical checkup', 'Approved'),
+(15, '2025-05-25', '2025-05-26', 'Interview preparation', 'Rejected'),
+(16, '2025-06-01', '2025-06-02', 'Family function', 'Pending'),
+(17, '2025-06-05', '2025-06-05', 'Seminar attendance', 'Approved'),
+(18, '2025-06-10', '2025-06-12', 'Personal emergency', 'Rejected'),
+(19, '2025-06-15', '2025-06-17', 'Conference travel', 'Pending'),
+(20, '2025-06-20', '2025-06-20', 'Medical appointment', 'Approved');

@@ -319,6 +319,7 @@
         .badge-pending  { background: #FEF3C7; color: #92400E; }
         .badge-approved { background: #DCFCE7; color: #14532D; }
         .badge-rejected { background: #FEE2E2; color: #7F1D1D; }
+        .badge-expired { background: #F3F4F6; color: #6B7280; border: 1px solid #D1D5DB; }
 
         /* ===== RESPONSIVE ===== */
         @media (max-width: 768px) {
@@ -412,7 +413,7 @@
         <!-- ===== pending requests table ===== -->
         <div class="section-card">
             <div class="section-header">
-                <h2>All Pending Leave Requests</h2>
+                <h2>All Leave Requests</h2>
                 <span>Fetched live</span>
             </div>
             <div class="leave-request-list">
@@ -486,23 +487,37 @@ function formatDateTime(dateString) {
 
                 // build status badge
                 let statusClass = 'badge-pending';
-                let statusText = request.status || 'Pending';
+                let statusText = request.displayStatus || request.status || 'Pending';
                 if (statusText.toLowerCase() === 'approved') statusClass = 'badge-approved';
                 else if (statusText.toLowerCase() === 'rejected') statusClass = 'badge-rejected';
+                else if (statusText === 'TIME EXPIRED') statusClass = 'badge-expired';
+
+                // Disable buttons for expired requests
+                const isExpired = request.expired || false;
+                const buttonsHtml = isExpired 
+                    ? '<span style="color: var(--muted); font-size: 12px;">No actions available</span>'
+                    : `<button class="approve" onclick="updateLeaveStatus(${request.id}, 'Approved')">Approve</button>
+                        <button class="reject" onclick="updateLeaveStatus(${request.id}, 'Rejected')">Reject</button>`;
 
                 row.innerHTML = `
                     <td>${request.student_name || ''}</td>
-                    <td>${formatDateTime(request.from_date)}</td>
-                    <td>${formatDateTime(request.to_date)}</td>
+                    <td>${formatDate(request.from_date)}</td>
+                    <td>${formatDate(request.to_date)}</td>
                     <td>${request.reason || ''}</td>
                     <td><span class="badge ${statusClass}">${statusText}</span></td>
                     <td class="action-cell">
-                        <button class="approve" onclick="updateLeaveStatus(${request.id}, 'Approved')">Approve</button>
-                        <button class="reject" onclick="updateLeaveStatus(${request.id}, 'Rejected')">Reject</button>
+                        ${buttonsHtml}
                     </td>
                 `;
                 tableBody.appendChild(row);
             });
+        }
+
+        // Format date only (no time)
+        function formatDate(dateString) {
+            if (!dateString) return "N/A";
+            const date = new Date(dateString);
+            return date.toISOString().split("T")[0];
         }
 
         // ----- update status (POST) -----
