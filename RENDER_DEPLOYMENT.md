@@ -66,32 +66,20 @@ FRONTEND_URL=https://your-app-name.onrender.com
 
 ## 🗄️ Database Migration
 
-Since your local network cannot connect to Aiven, the database migration will happen **after deployment**:
+The database migration should be a one-time operation. Since your local network cannot connect to Aiven, use this method:
 
-### Method 1: Automatic Migration (Recommended)
+### Initial Migration via Render Shell (Recommended)
 
-Add this to your `package.json` scripts:
-```json
-"scripts": {
-  "start": "node server1.js",
-  "migrate": "node migrate-on-deploy.js"
-}
-```
-
-Then in Render Dashboard:
-1. Go to your service settings
-2. Add a "Deploy Hook" or run the migration manually
-3. Set the start command to: `npm run migrate && npm start`
-
-### Method 2: Manual Migration
-
-1. Deploy the application first
-2. Use Render's "Shell" access to run:
+1. **Deploy the application first** with current configuration (`npm install` + `npm start`)
+2. **Go to Render Dashboard** → your service → "Shell"
+3. **Run the migration script**:
    ```bash
    node migrate-on-deploy.js
    ```
+4. **Verify migration success** in the output
+5. **The migration will persist** - no need to run again
 
-### Method 3: Aiven Console
+### Alternative: Aiven Console
 
 1. Log in to your Aiven Console
 2. Navigate to your MySQL service

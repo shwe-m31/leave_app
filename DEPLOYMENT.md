@@ -45,7 +45,7 @@ The application will:
 
 ### Aiven Configuration
 
-When you deploy to production, you'll need to set these environment variables in your deployment platform (Render, Railway, Heroku, etc.):
+When you deploy to production, you'll need to set these environment variables in your deployment platform (Render):
 
 ```env
 DB_HOST=<your-aiven-host>
@@ -97,13 +97,7 @@ The backend allows requests from:
 3. Set environment variables in Render dashboard
 4. Deploy
 
-### Option 2: Railway
-1. Create a new project on Railway
-2. Add your repository
-3. Configure environment variables
-4. Deploy
-
-### Option 3: Heroku
+### Option 2: Heroku
 1. Create a new Heroku app
 2. Set Config Vars:
    ```bash
