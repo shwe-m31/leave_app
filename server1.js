@@ -293,13 +293,32 @@ app.get('/api/student-attendance-data', (req, res) => {
             return;
         }
         
-        // Calculate days absent from approved leave
+        // Calculate days absent from approved leave, handling academic year overlap
         let daysAbsent = 0;
         results.forEach(request => {
             const fromDate = new Date(request.from_date);
             const toDate = new Date(request.to_date);
-            const leaveDays = Math.ceil((toDate - fromDate) / (1000 * 60 * 60 * 24)) + 1;
-            daysAbsent += leaveDays;
+            
+            // For each day in the leave period, check if it falls within the academic year
+            let currentDate = new Date(fromDate);
+            while (currentDate <= toDate) {
+                const dateStr = currentDate.toISOString().split('T')[0];
+                
+                // Check if this date falls within the academic year
+                if (academicYear && academicYear !== 'all') {
+                    const [startYear, endYear] = academicYear.split('-').map(Number);
+                    const startDate = new Date(`${startYear}-08-01`);
+                    const endDate = new Date(`${endYear}-06-30`);
+                    
+                    if (currentDate >= startDate && currentDate <= endDate) {
+                        daysAbsent += 1;
+                    }
+                } else {
+                    daysAbsent += 1;
+                }
+                
+                currentDate.setDate(currentDate.getDate() + 1);
+            }
         });
         
         // Calculate attendance
