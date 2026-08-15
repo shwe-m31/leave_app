@@ -63,10 +63,7 @@ const dbConfig = {
 if (process.env.DB_SSL === 'true' || process.env.DB_HOST.includes('aiven')) {
     // For Aiven, we need proper SSL configuration
     dbConfig.ssl = {
-        // Aiven typically requires SSL but may use self-signed certificates
-        // In production, you should obtain the proper CA certificate
-        rejectUnauthorized: false // Temporary: allows self-signed certs
-        // For production, consider: rejectUnauthorized: true with proper CA cert
+        rejectUnauthorized: false // Required for Aiven's self-signed certificates
     };
 }
 
