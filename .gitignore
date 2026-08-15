@@ -27,3 +27,7 @@ aiven-migration.js
 test-network.js
 # migrate-on-deploy.js (needed for deployment)
 # leave_db_aiven.sql (needed for deployment)
+
+# Credentials files (NEVER commit these)
+CREDENTIALS_FOR_RENDER.md
+*credentials*.md

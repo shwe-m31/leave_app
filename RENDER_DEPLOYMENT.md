@@ -2,13 +2,15 @@
 
 ## 🔐 Security Notice
 
-**⚠️ IMPORTANT**: The Aiven credentials are included in this document for setup purposes only. After successful deployment, you should:
-1. Remove the credentials from this document
+**⚠️ IMPORTANT**: The actual Aiven credentials are in `CREDENTIALS_FOR_RENDER.md` for setup purposes only. After successful deployment, you should:
+1. Delete the `CREDENTIALS_FOR_RENDER.md` file
 2. Rotate your Aiven password if you shared it through an insecure channel
 
 ## 📋 Render Environment Variables
 
-Set these environment variables in your Render Dashboard for the `leave-management-system` service:
+Set these environment variables in your Render Dashboard for the `leave-management-system` service.
+
+**See `CREDENTIALS_FOR_RENDER.md` for the actual credential values.**
 
 ### Database Configuration (Aiven MySQL)
 ```

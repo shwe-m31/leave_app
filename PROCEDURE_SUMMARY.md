@@ -63,7 +63,9 @@ Application Live
 
 ### Step 2: Set Environment Variables in Render
 
-Add these environment variables in Render Dashboard:
+Add these environment variables in Render Dashboard.
+
+**See `CREDENTIALS_FOR_RENDER.md` for the actual credential values.**
 
 ```env
 DB_HOST=<your-aiven-host>

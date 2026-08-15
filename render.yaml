@@ -10,10 +10,11 @@ services:
     plan: free # Change to paid plans for production
     env: node
     buildCommand: npm install
-    startCommand: npm start
+    startCommand: npm run migrate:start
     
     # Environment Variables - Set these in Render Dashboard
-    # DB_HOST, DB_PORT, DB_USER, DB_PASSWORD, DB_NAME, NODE_ENV, DB_SSL
+    # See CREDENTIALS_FOR_RENDER.md for actual values
+    # DB_HOST, DB_PORT, DB_USER, DB_PASSWORD, DB_NAME, NODE_ENV, DB_SSL, FRONTEND_URL
     
     # Auto-deploy on git push
     branch: main
