@@ -306,15 +306,18 @@
                     });
     
                     if (!response.ok) {
-                        throw new Error("Server error: " + response.status);
+                        const errorData = await response.json();
+                        throw new Error(errorData.error || "Server error: " + response.status);
                     }
     
                     const data = await response.json();
                     console.log("Response:", data);
                     alert(data.message); // Show success message
+                    // Redirect back to dashboard after successful submission
+                    window.location.href = "student.html";
                 } catch (error) {
                     console.error("Error submitting leave request:", error);
-                    alert("Failed to submit request. Please try again.");
+                    alert(error.message || "Failed to submit request. Please try again.");
                 }
             });
         });

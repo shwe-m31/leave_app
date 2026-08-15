@@ -231,16 +231,24 @@ app.post('/api/update-leave-status', (req, res) => {
                     return;
                 }
                 
-                // Calculate total days absent from all approved leaves
-                let totalDaysAbsent = 0;
+                // Calculate total days absent from all approved leaves using unique dates
+                const uniqueAbsentDates = new Set();
+                
                 approvedResults.forEach(request => {
                     const fromDate = new Date(request.from_date);
                     const toDate = new Date(request.to_date);
-                    const leaveDays = Math.ceil((toDate - fromDate) / (1000 * 60 * 60 * 24)) + 1;
-                    totalDaysAbsent += leaveDays;
+                    
+                    // For each day in the leave period
+                    let currentDate = new Date(fromDate);
+                    while (currentDate <= toDate) {
+                        const dateStr = currentDate.toISOString().split('T')[0];
+                        uniqueAbsentDates.add(dateStr);
+                        currentDate.setDate(currentDate.getDate() + 1);
+                    }
                 });
                 
-                // Calculate new attendance
+                // Calculate new attendance based on unique dates
+                const totalDaysAbsent = uniqueAbsentDates.size;
                 const workingDays = 100;
                 const attendanceDays = Math.max(0, workingDays - totalDaysAbsent);
                 const newAttendance = (attendanceDays / workingDays) * 100;
@@ -294,7 +302,9 @@ app.get('/api/student-attendance-data', (req, res) => {
         }
         
         // Calculate days absent from approved leave, handling academic year overlap
-        let daysAbsent = 0;
+        // Use a Set to track unique dates to prevent counting duplicates
+        const uniqueAbsentDates = new Set();
+        
         results.forEach(request => {
             const fromDate = new Date(request.from_date);
             const toDate = new Date(request.to_date);
@@ -311,17 +321,18 @@ app.get('/api/student-attendance-data', (req, res) => {
                     const endDate = new Date(`${endYear}-06-30`);
                     
                     if (currentDate >= startDate && currentDate <= endDate) {
-                        daysAbsent += 1;
+                        uniqueAbsentDates.add(dateStr);
                     }
                 } else {
-                    daysAbsent += 1;
+                    uniqueAbsentDates.add(dateStr);
                 }
                 
                 currentDate.setDate(currentDate.getDate() + 1);
             }
         });
         
-        // Calculate attendance
+        // Calculate attendance based on unique dates
+        const daysAbsent = uniqueAbsentDates.size;
         const workingDays = config.workingDays;
         const attendanceDays = Math.max(0, workingDays - daysAbsent);
         const attendancePercentage = (attendanceDays / workingDays) * 100;
@@ -346,14 +357,42 @@ app.post('/api/submit-leave', (req, res) => {
         return res.status(400).json({ error: "All fields are required" });
     }
 
-    const sql = "INSERT INTO leave_requests (stud_id, from_date, to_date, reason, status) VALUES (?, ?, ?, ?, ?)";
-    db.query(sql, [stud_id, from_date, to_date, reason, status], (err, result) => {
+    // First, check for date overlap with existing leave requests for this student
+    const overlapCheckSql = `
+        SELECT * FROM leave_requests 
+        WHERE stud_id = ? 
+        AND status IN ('Pending', 'Approved')
+        AND (
+            (from_date <= ? AND to_date >= ?) OR
+            (from_date <= ? AND to_date >= ?) OR
+            (from_date >= ? AND to_date <= ?)
+        )
+    `;
+    
+    db.query(overlapCheckSql, [stud_id, from_date, from_date, to_date, to_date, from_date, to_date], (err, overlapResults) => {
         if (err) {
-            console.error("Error inserting leave request:", err.message);
+            console.error("Error checking for overlapping leave requests:", err.message);
             res.status(500).json({ error: "Internal server error" });
-        } else {
-            res.json({ message: "Leave request submitted successfully" });
+            return;
         }
+        
+        if (overlapResults.length > 0) {
+            console.log("Duplicate/overlapping leave request detected");
+            return res.status(400).json({ 
+                error: "Leave already exists for the selected date(s). You cannot submit multiple leave requests for overlapping dates." 
+            });
+        }
+        
+        // No overlap found, proceed with insertion
+        const sql = "INSERT INTO leave_requests (stud_id, from_date, to_date, reason, status) VALUES (?, ?, ?, ?, ?)";
+        db.query(sql, [stud_id, from_date, to_date, reason, status], (err, result) => {
+            if (err) {
+                console.error("Error inserting leave request:", err.message);
+                res.status(500).json({ error: "Internal server error" });
+            } else {
+                res.json({ message: "Leave request submitted successfully" });
+            }
+        });
     });
 });
 
@@ -384,64 +423,6 @@ app.get('/api/student-leave-history', (req, res) => {
         } else {
             res.json(results);
         }
-    });
-});
-
-// Get academic year attendance data for student
-app.get('/api/student-attendance-data', (req, res) => {
-    const userId = req.query.userId;
-    const academicYear = req.query.academicYear;
-    
-    // Academic year configuration
-    const academicYearConfig = {
-        '2024-2025': { start: '2024-08-01', end: '2025-06-30', semesterDays: 180, workingDays: 100 },
-        '2025-2026': { start: '2025-08-01', end: '2026-05-31', semesterDays: 180, workingDays: 100 },
-        '2026-2027': { start: '2026-08-01', end: '2027-05-31', semesterDays: 180, workingDays: 100 }
-    };
-    
-    const config = academicYearConfig[academicYear] || academicYearConfig['2026-2027'];
-    
-    // Get approved leave requests for the academic year
-    let sql = "SELECT * FROM leave_requests WHERE stud_id = ? AND status = 'Approved'";
-    const params = [userId];
-    
-    if (academicYear && academicYear !== 'all') {
-        const [startYear, endYear] = academicYear.split('-').map(Number);
-        const startDate = `${startYear}-08-01`;
-        const endDate = `${endYear}-06-30`;
-        
-        sql += " AND from_date >= ? AND from_date <= ?";
-        params.push(startDate, endDate);
-    }
-    
-    db.query(sql, params, (err, results) => {
-        if (err) {
-            console.error('Error fetching leave requests:', err.message);
-            res.status(500).json({ error: 'Internal server error' });
-            return;
-        }
-        
-        // Calculate days absent from approved leave
-        let daysAbsent = 0;
-        results.forEach(request => {
-            const fromDate = new Date(request.from_date);
-            const toDate = new Date(request.to_date);
-            const leaveDays = Math.ceil((toDate - fromDate) / (1000 * 60 * 60 * 24)) + 1;
-            daysAbsent += leaveDays;
-        });
-        
-        // Calculate attendance
-        const workingDays = config.workingDays;
-        const attendanceDays = Math.max(0, workingDays - daysAbsent);
-        const attendancePercentage = (attendanceDays / workingDays) * 100;
-        
-        res.json({
-            semesterDays: config.semesterDays,
-            workingDays: workingDays,
-            daysAbsent: daysAbsent,
-            attendanceDays: attendanceDays,
-            attendancePercentage: attendancePercentage
-        });
     });
 });
 

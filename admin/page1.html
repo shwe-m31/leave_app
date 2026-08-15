@@ -492,12 +492,13 @@ function formatDateTime(dateString) {
                 else if (statusText.toLowerCase() === 'rejected') statusClass = 'badge-rejected';
                 else if (statusText === 'TIME EXPIRED') statusClass = 'badge-expired';
 
-                // Disable buttons for expired requests
+                // Only show action buttons for Pending requests that are not expired
+                const isPending = request.status === 'Pending';
                 const isExpired = request.expired || false;
-                const buttonsHtml = isExpired 
-                    ? '<span style="color: var(--muted); font-size: 12px;">No actions available</span>'
-                    : `<button class="approve" onclick="updateLeaveStatus(${request.id}, 'Approved')">Approve</button>
-                        <button class="reject" onclick="updateLeaveStatus(${request.id}, 'Rejected')">Reject</button>`;
+                const buttonsHtml = (isPending && !isExpired) 
+                    ? `<button class="approve" onclick="updateLeaveStatus(${request.id}, 'Approved')">Approve</button>
+                        <button class="reject" onclick="updateLeaveStatus(${request.id}, 'Rejected')">Reject</button>`
+                    : '<span style="color: var(--muted); font-size: 12px;">No actions available</span>';
 
                 row.innerHTML = `
                     <td>${request.student_name || ''}</td>
