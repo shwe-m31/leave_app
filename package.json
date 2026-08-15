@@ -5,7 +5,8 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "node server1.js",
-    "migrate": "node migrate-on-deploy.js"
+    "migrate": "node migrate-on-deploy.js",
+    "inspect": "node migrate-on-deploy.js --inspect"
   },
   "keywords": [],
   "author": "",

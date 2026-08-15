@@ -17,6 +17,13 @@ const config = {
     multipleStatements: true // Enable multiple SQL statements
 };
 
+// If running with --inspect flag, run database inspection instead
+if (process.argv.includes('--inspect')) {
+    console.log('🔍 Running database inspection mode...');
+    inspectDatabases();
+    return;
+}
+
 console.log('Starting database migration...');
 console.log('Host:', config.host);
 console.log('Port:', config.port);
@@ -40,7 +47,7 @@ connection.connect((err) => {
     console.log('✅ Successfully connected to database');
     
     // Read the SQL file
-    const sqlFile = path.join(__dirname, 'leave_db_aiven.sql');
+    const sqlFile = path.join(__dirname, 'leave_db.sql');
     
     if (!fs.existsSync(sqlFile)) {
         console.error('❌ SQL file not found:', sqlFile);
@@ -53,6 +60,7 @@ connection.connect((err) => {
     
     // Remove USE statement since we're already connected to the database
     const cleanedSql = sql
+        .replace(/CREATE DATABASE IF NOT EXISTS[^;]+;/g, '') // Remove CREATE DATABASE statements
         .replace(/USE `[^`]+`;/g, '') // Remove USE statements
         .replace(/--.*$/gm, '') // Remove single-line comments
         .replace(/\/\*[\s\S]*?\*\//g, '') // Remove multi-line comments
@@ -112,4 +120,141 @@ connection.connect((err) => {
             }
         });
     });
-});
+}
+
+function inspectDatabases() {
+    console.log('🔍 Database Inspection Mode');
+    console.log('============================');
+    console.log('Host:', config.host);
+    console.log('Port:', config.port);
+    console.log('User:', config.user);
+    console.log('SSL:', config.ssl ? 'Enabled' : 'Disabled');
+
+    const connection = mysql.createConnection(config);
+
+    connection.connect((err) => {
+        if (err) {
+            console.error('❌ Aiven connection failed:', err.message);
+            process.exit(1);
+        }
+        
+        console.log('✅ Successfully connected to Aiven MySQL');
+        
+        // First, show all databases
+        connection.query('SHOW DATABASES', (err, results) => {
+            if (err) {
+                console.error('❌ Failed to show databases:', err.message);
+                connection.end();
+                process.exit(1);
+            }
+            
+            console.log('\n📋 Available databases:');
+            results.forEach(db => {
+                console.log('  -', Object.values(db)[0]);
+            });
+            
+            // Now inspect defaultdb
+            console.log('\n🔍 Inspecting defaultdb...');
+            connection.query('USE defaultdb', (err) => {
+                if (err) {
+                    console.error('❌ Failed to use defaultdb:', err.message);
+                    console.log('ℹ️  defaultdb does not exist or is not accessible');
+                    inspectLeaveDb(connection);
+                } else {
+                    connection.query('SHOW TABLES', (err, results) => {
+                        if (err) {
+                            console.error('❌ Failed to show tables in defaultdb:', err.message);
+                            inspectLeaveDb(connection);
+                        } else {
+                            console.log('📋 Tables in defaultdb:', results.length > 0 ? results.map(r => Object.values(r)[0]).join(', ') : 'None');
+                            
+                            if (results.length > 0) {
+                                // Get row counts for each table
+                                let tablesProcessed = 0;
+                                results.forEach((tableObj) => {
+                                    const tableName = Object.values(tableObj)[0];
+                                    connection.query(`SELECT COUNT(*) as count FROM ${tableName}`, (err, countResult) => {
+                                        if (!err) {
+                                            console.log(`  - ${tableName}: ${countResult[0].count} rows`);
+                                        }
+                                        tablesProcessed++;
+                                        if (tablesProcessed === results.length) {
+                                            inspectLeaveDb(connection);
+                                        }
+                                    });
+                                });
+                            } else {
+                                inspectLeaveDb(connection);
+                            }
+                        }
+                    });
+                }
+            });
+        });
+    });
+}
+
+function inspectLeaveDb(connection) {
+    console.log('\n🔍 Inspecting leave_db...');
+    connection.query('USE leave_db', (err) => {
+        if (err) {
+            console.error('❌ Failed to use leave_db:', err.message);
+            console.log('ℹ️  leave_db does not exist or is not accessible');
+            connection.end();
+            process.exit(0);
+        }
+        
+        connection.query('SHOW TABLES', (err, results) => {
+            if (err) {
+                console.error('❌ Failed to show tables in leave_db:', err.message);
+                connection.end();
+                process.exit(1);
+            }
+            
+            console.log('📋 Tables in leave_db:', results.length > 0 ? results.map(r => Object.values(r)[0]).join(', ') : 'None');
+            
+            if (results.length > 0) {
+                // Get row counts for each table
+                let tablesProcessed = 0;
+                results.forEach((tableObj) => {
+                    const tableName = Object.values(tableObj)[0];
+                    connection.query(`SELECT COUNT(*) as count FROM ${tableName}`, (err, countResult) => {
+                        if (!err) {
+                            console.log(`  - ${tableName}: ${countResult[0].count} rows`);
+                        }
+                        tablesProcessed++;
+                        if (tablesProcessed === results.length) {
+                            inspectTableStructures(connection, results.map(r => Object.values(r)[0]));
+                        }
+                    });
+                });
+            } else {
+                connection.end();
+                process.exit(0);
+            }
+        });
+    });
+}
+
+function inspectTableStructures(connection, tables) {
+    console.log('\n🔍 Inspecting table structures...');
+    
+    let tablesInspected = 0;
+    
+    tables.forEach((tableName) => {
+        connection.query(`DESCRIBE ${tableName}`, (err, results) => {
+            if (!err) {
+                console.log(`\n📋 Structure of ${tableName}:`);
+                results.forEach(column => {
+                    console.log(`  - ${column.Field}: ${column.Type} ${column.Null === 'NO' ? 'NOT NULL' : ''} ${column.Key ? '(' + column.Key + ')' : ''}`);
+                });
+            }
+            
+            tablesInspected++;
+            if (tablesInspected === tables.length) {
+                connection.end();
+                process.exit(0);
+            }
+        });
+    });
+}
