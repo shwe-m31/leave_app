@@ -9,7 +9,7 @@ services:
     runtime: node
     plan: free # Change to paid plans for production
     env: node
-    buildCommand: npm install
+    buildCommand: npm install && npm run migrate
     startCommand: npm start
     
     # Environment Variables - Set these in Render Dashboard

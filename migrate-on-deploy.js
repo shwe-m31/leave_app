@@ -20,6 +20,12 @@ const config = {
 // If running with --inspect flag, run database inspection instead
 if (process.argv.includes('--inspect')) {
     console.log('🔍 Running database inspection mode...');
+    if (!config.host || !config.user || !config.password) {
+        console.error('❌ Missing required environment variables for inspection');
+        console.error('Required: DB_HOST, DB_PORT, DB_USER, DB_PASSWORD, DB_NAME');
+        console.error('This script needs to be run on Render or with environment variables set');
+        process.exit(1);
+    }
     inspectDatabases();
     return;
 }
@@ -48,6 +54,9 @@ connection.connect((err) => {
     
     // Read the SQL file
     const sqlFile = path.join(__dirname, 'leave_db.sql');
+    
+    console.log('📄 Using SQL file:', sqlFile);
+    console.log('🎯 Target database:', config.database);
     
     if (!fs.existsSync(sqlFile)) {
         console.error('❌ SQL file not found:', sqlFile);
