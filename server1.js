@@ -2,26 +2,97 @@ const express = require('express');
 const mysql = require('mysql2');
 const cors = require('cors');
 const path = require('path');
+require('dotenv').config();
 
 const app = express();
-app.use(cors());
+
+// CORS Configuration - Allow both local and production origins
+const allowedOrigins = [
+    'http://localhost:3000',
+    'http://127.0.0.1:3000',
+    'http://localhost:3001',
+    'http://127.0.0.1:3001'
+];
+
+// Add production URL from environment if available
+if (process.env.FRONTEND_URL) {
+    allowedOrigins.push(process.env.FRONTEND_URL);
+}
+
+app.use(cors({
+    origin: function(origin, callback) {
+        // Allow requests with no origin (like mobile apps or curl requests)
+        if (!origin) return callback(null, true);
+        
+        if (allowedOrigins.indexOf(origin) !== -1) {
+            callback(null, true);
+        } else {
+            console.log('CORS blocked origin:', origin);
+            callback(null, false);
+        }
+    },
+    credentials: true
+}));
+
 app.use(express.json());
 app.use(express.static(path.join(__dirname)));
 
-// MySQL Database Connection
-const db = mysql.createConnection({
-    host: '127.0.0.1',
-    user: 'root',
-    password: 'Sql@3306',
-    database: 'leave_db',
-    port:3306
-});
+// Validate required environment variables
+const requiredEnvVars = ['DB_HOST', 'DB_PORT', 'DB_USER', 'DB_PASSWORD', 'DB_NAME'];
+const missingEnvVars = requiredEnvVars.filter(varName => !process.env[varName]);
 
-db.connect(err => {
+if (missingEnvVars.length > 0) {
+    console.error('Missing required environment variables:', missingEnvVars.join(', '));
+    console.error('Please check your .env file or environment configuration.');
+    process.exit(1);
+}
+
+// MySQL Database Configuration with SSL support for Aiven
+const dbConfig = {
+    host: process.env.DB_HOST,
+    port: Number(process.env.DB_PORT),
+    user: process.env.DB_USER,
+    password: process.env.DB_PASSWORD,
+    database: process.env.DB_NAME,
+    waitForConnections: true,
+    connectionLimit: 10,
+    queueLimit: 0
+};
+
+// Add SSL configuration for Aiven or if specified
+if (process.env.DB_SSL === 'true' || process.env.DB_HOST.includes('aiven')) {
+    // For Aiven, we need proper SSL configuration
+    dbConfig.ssl = {
+        // Aiven typically requires SSL but may use self-signed certificates
+        // In production, you should obtain the proper CA certificate
+        rejectUnauthorized: false // Temporary: allows self-signed certs
+        // For production, consider: rejectUnauthorized: true with proper CA cert
+    };
+}
+
+// Create connection pool instead of single connection
+const db = mysql.createPool(dbConfig);
+
+// Test database connection
+db.getConnection((err, connection) => {
     if (err) {
-        console.error('Database connection failed:', err);
+        console.error('Database connection failed:');
+        console.error('Host:', process.env.DB_HOST);
+        console.error('Port:', process.env.DB_PORT);
+        console.error('User:', process.env.DB_USER);
+        console.error('Database:', process.env.DB_NAME);
+        console.error('Error:', err.message);
+        
+        // Don't exit in development, but log the error clearly
+        if (process.env.NODE_ENV === 'production') {
+            process.exit(1);
+        }
     } else {
-        console.log('Connected to MySQL');
+        console.log('Connected to MySQL successfully');
+        console.log('Host:', process.env.DB_HOST);
+        console.log('Port:', process.env.DB_PORT);
+        console.log('Database:', process.env.DB_NAME);
+        connection.release();
     }
 });
 
@@ -37,7 +108,7 @@ app.post('/api/login', (req, res) => {
     
     db.query(sql, [email, password, role], (err, results) => {
         if (err) {
-            console.error('Error during login:', err);
+            console.error('Error during login:', err.message);
             res.status(500).json({ error: 'Internal server error' });
         } else if (results.length > 0) {
             res.json({ message: 'Login successful', user: results[0] });
@@ -54,7 +125,7 @@ app.get('/api/student-profile', (req, res) => {
     
     db.query(sql, [userId], (err, results) => {
         if (err) {
-            console.error('Error fetching student profile:', err);
+            console.error('Error fetching student profile:', err.message);
             res.status(500).json({ error: 'Internal server error' });
         } else {
             res.json(results[0] || {});
@@ -68,7 +139,7 @@ app.get('/api/students', (req, res) => {
     
     db.query(sql, (err, results) => {
         if (err) {
-            console.error('Error fetching students:', err);
+            console.error('Error fetching students:', err.message);
             res.status(500).json({ error: 'Internal server error' });
         } else {
             res.json(results);
@@ -82,7 +153,7 @@ app.get('/api/student-count', (req, res) => {
     
     db.query(sql, (err, results) => {
         if (err) {
-            console.error('Error fetching student count:', err);
+            console.error('Error fetching student count:', err.message);
             res.status(500).json({ error: 'Internal server error' });
         } else {
             res.json({ count: results[0].count });
@@ -96,7 +167,7 @@ app.get('/api/leave-requests', (req, res) => {
     
     db.query(sql, (err, results) => {
         if (err) {
-            console.error('Error fetching leave requests:', err);
+            console.error('Error fetching leave requests:', err.message);
             res.status(500).json({ error: 'Internal server error' });
         } else {
             res.json(results);
@@ -112,7 +183,7 @@ app.post('/api/update-leave-status', (req, res) => {
     const getLeaveSql = "SELECT * FROM leave_requests WHERE id = ?";
     db.query(getLeaveSql, [id], (err, results) => {
         if (err) {
-            console.error('Error fetching leave request:', err);
+            console.error('Error fetching leave request:', err.message);
             res.status(500).json({ error: 'Internal server error' });
             return;
         }
@@ -128,7 +199,7 @@ app.post('/api/update-leave-status', (req, res) => {
         const updateSql = "UPDATE leave_requests SET status = ? WHERE id = ?";
         db.query(updateSql, [status, id], (err, result) => {
             if (err) {
-                console.error('Error updating leave request status:', err);
+                console.error('Error updating leave request status:', err.message);
                 res.status(500).json({ error: 'Internal server error' });
                 return;
             }
@@ -143,7 +214,7 @@ app.post('/api/update-leave-status', (req, res) => {
                 const getStudentSql = "SELECT attendance_percentage FROM users WHERE id = ?";
                 db.query(getStudentSql, [leaveRequest.stud_id], (err, studentResults) => {
                     if (err) {
-                        console.error('Error fetching student attendance:', err);
+                        console.error('Error fetching student attendance:', err.message);
                         return;
                     }
                     
@@ -155,7 +226,7 @@ app.post('/api/update-leave-status', (req, res) => {
                     const updateAttendanceSql = "UPDATE users SET attendance_percentage = ? WHERE id = ?";
                     db.query(updateAttendanceSql, [newAttendance, leaveRequest.stud_id], (err) => {
                         if (err) {
-                            console.error('Error updating attendance:', err);
+                            console.error('Error updating attendance:', err.message);
                         }
                     });
                 });
@@ -179,7 +250,7 @@ app.post('/api/submit-leave', (req, res) => {
     const sql = "INSERT INTO leave_requests (stud_id, from_date, to_date, reason, status) VALUES (?, ?, ?, ?, ?)";
     db.query(sql, [stud_id, from_date, to_date, reason, status], (err, result) => {
         if (err) {
-            console.error("Error inserting leave request:", err);
+            console.error("Error inserting leave request:", err.message);
             res.status(500).json({ error: "Internal server error" });
         } else {
             res.json({ message: "Leave request submitted successfully" });
@@ -204,7 +275,7 @@ app.get('/api/student-leave-history', (req, res) => {
     
     db.query(sql, params, (err, results) => {
         if (err) {
-            console.error('Error fetching leave history:', err);
+            console.error('Error fetching leave history:', err.message);
             res.status(500).json({ error: 'Internal server error' });
         } else {
             res.json(results);
@@ -213,6 +284,8 @@ app.get('/api/student-leave-history', (req, res) => {
 });
 
 // Start Server
-app.listen(3001, () => {
-    console.log('Admin server running on port 3001');
+const PORT = process.env.PORT || 3001;
+app.listen(PORT, () => {
+    console.log(`Server running on port ${PORT}`);
+    console.log(`Environment: ${process.env.NODE_ENV || 'development'}`);
 });

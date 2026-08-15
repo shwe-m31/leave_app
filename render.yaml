@@ -1,0 +1,22 @@
+# Render Deployment Configuration
+# This file configures your Node.js application for deployment on Render
+# NOTE: Environment variables should be set in Render Dashboard, not here
+
+services:
+  # Web Service (Backend + Frontend)
+  - type: web
+    name: leave-management-system
+    runtime: node
+    plan: free # Change to paid plans for production
+    env: node
+    buildCommand: npm install
+    startCommand: npm start
+    
+    # Environment Variables - Set these in Render Dashboard
+    # DB_HOST, DB_PORT, DB_USER, DB_PASSWORD, DB_NAME, NODE_ENV, DB_SSL
+    
+    # Auto-deploy on git push
+    branch: main
+    
+    # Region (choose closest to your Aiven service)
+    region: oregon # Change as needed

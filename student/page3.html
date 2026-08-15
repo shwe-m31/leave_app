@@ -261,6 +261,7 @@
     </div>
 
     <!-- Original JavaScript preserved exactly -->
+    <script src="../config.js"></script>
     <script>
         document.addEventListener("DOMContentLoaded", function () {
             // Ensure the form exists before adding event listener
@@ -297,7 +298,8 @@
                 console.log("Sending Request Data:", requestData);
     
                 try {
-                    const response = await fetch("http://localhost:3001/api/submit-leave", {
+                    const apiUrl = API_CONFIG.getBaseUrl() + '/api/submit-leave';
+                    const response = await fetch(apiUrl, {
                         method: "POST",
                         headers: { "Content-Type": "application/json" },
                         body: JSON.stringify(requestData)

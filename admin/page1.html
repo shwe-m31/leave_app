@@ -437,11 +437,13 @@
     </div>
 
     <!-- ===== JAVASCRIPT (preserved logic, simplified for readability) ===== -->
+    <script src="../config.js"></script>
     <script>
         // ----- fetch from backend -----
         async function fetchLeaveRequests() {
             try {
-                const response = await fetch("http://localhost:3001/api/leave-requests");
+                const apiUrl = API_CONFIG.getBaseUrl() + '/api/leave-requests';
+                const response = await fetch(apiUrl);
                 if (!response.ok) {
                     throw new Error("Server error: " + response.status);
                 }
@@ -506,7 +508,8 @@ function formatDateTime(dateString) {
         // ----- update status (POST) -----
         async function updateLeaveStatus(id, status) {
             try {
-                const response = await fetch("http://localhost:3001/api/update-leave-status", {
+                const apiUrl = API_CONFIG.getBaseUrl() + '/api/update-leave-status';
+                const response = await fetch(apiUrl, {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({ id, status })
@@ -540,7 +543,8 @@ function formatDateTime(dateString) {
         // ----- fetch student count -----
         async function fetchStudentCount() {
             try {
-                const response = await fetch("http://localhost:3001/api/student-count");
+                const apiUrl = API_CONFIG.getBaseUrl() + '/api/student-count';
+                const response = await fetch(apiUrl);
                 if (!response.ok) {
                     throw new Error("Server error: " + response.status);
                 }

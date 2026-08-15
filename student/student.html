@@ -400,6 +400,7 @@
     </div>
 
     <!-- Original JavaScript preserved exactly -->
+    <script src="../config.js"></script>
     <script>
         let attendanceChart = null;
         
@@ -435,7 +436,8 @@
         // Fetch Student Profile
         async function fetchStudentProfile(userId) {
             try {
-                const response = await fetch(`http://localhost:3001/api/student-profile?userId=${userId}`);
+                const apiUrl = API_CONFIG.getBaseUrl() + `/api/student-profile?userId=${userId}`;
+                const response = await fetch(apiUrl);
                 if (!response.ok) {
                     throw new Error("Failed to fetch student profile");
                 }
@@ -508,12 +510,12 @@
         async function fetchLeaveHistory(userId) {
             try {
                 const yearFilter = document.getElementById('yearFilter').value;
-                let url = `http://localhost:3001/api/student-leave-history?userId=${userId}`;
+                let apiUrl = API_CONFIG.getBaseUrl() + `/api/student-leave-history?userId=${userId}`;
                 if (yearFilter !== 'all') {
-                    url += `&year=${yearFilter}`;
+                    apiUrl += `&year=${yearFilter}`;
                 }
                 
-                const response = await fetch(url);
+                const response = await fetch(apiUrl);
                 if (!response.ok) {
                     throw new Error("Failed to fetch leave history");
                 }

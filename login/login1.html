@@ -240,6 +240,7 @@
     </div>
 
     <!-- Original JavaScript preserved exactly -->
+    <script src="../config.js"></script>
     <script>
         const studentBtn = document.getElementById("student-btn");
         const adminBtn = document.getElementById("admin-btn");
@@ -273,7 +274,8 @@
                 role: selectedRole
             };
 
-            fetch("http://localhost:3001/api/login", {
+            const apiUrl = API_CONFIG.getBaseUrl() + '/api/login';
+            fetch(apiUrl, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify(formData)
