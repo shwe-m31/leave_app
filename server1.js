@@ -6,6 +6,13 @@ require('dotenv').config();
 
 const app = express();
 
+// CORS bypass for inspection endpoint (must come before main CORS)
+app.use('/api/inspect-databases', (req, res, next) => {
+    res.header('Access-Control-Allow-Origin', '*');
+    res.header('Access-Control-Allow-Methods', 'GET');
+    next();
+});
+
 // CORS Configuration - Allow both local and production origins
 const allowedOrigins = [
     'http://localhost:3000',
