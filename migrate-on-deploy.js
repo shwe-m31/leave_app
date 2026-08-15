@@ -50,18 +50,71 @@ connection.connect((err) => {
     const sql = fs.readFileSync(sqlFile, 'utf8');
     console.log('📄 Reading SQL file:', sqlFile);
     
-    // Split SQL into individual statements
+    // Split SQL into individual statements - improved parsing
     const statements = sql
         .split(';')
         .map(s => s.trim())
-        .filter(s => s.length > 0 && !s.startsWith('--'));
+        .filter(s => s.length > 0 && !s.startsWith('--') && !s.startsWith('/*'));
     
     console.log('🔢 Executing', statements.length, 'SQL statements...');
+    
+    if (statements.length === 0) {
+        console.error('❌ No SQL statements found in file');
+        console.error('File content preview:', sql.substring(0, 200));
+        connection.end();
+        process.exit(1);
+    }
     
     let completed = 0;
     let errors = 0;
     
-    statements.forEach((statement, index) => {
+    // Execute statements sequentially
+    function executeNext(index) {
+        if (index >= statements.length) {
+            // All statements completed
+            console.log('\n🎉 Migration complete!');
+            console.log('✅ Successful statements:', completed - errors);
+            console.log('❌ Failed statements:', errors);
+            
+            // Verify tables were created
+            connection.query('SHOW TABLES', (err, results) => {
+                if (err) {
+                    console.error('❌ Failed to verify tables:', err.message);
+                } else {
+                    console.log('📋 Final tables:', results.map(r => Object.values(r)[0]).join(', '));
+                    
+                    // Verify data in users table
+                    connection.query('SELECT COUNT(*) as count FROM users', (err, results) => {
+                        if (err) {
+                            console.error('❌ Failed to count users:', err.message);
+                        } else {
+                            console.log('👥 Users in database:', results[0].count);
+                            
+                            // Verify data in leave_requests table
+                            connection.query('SELECT COUNT(*) as count FROM leave_requests', (err, results) => {
+                                if (err) {
+                                    console.error('❌ Failed to count leave requests:', err.message);
+                                } else {
+                                    console.log('📝 Leave requests in database:', results[0].count);
+                                }
+                                connection.end();
+                                
+                                if (errors === 0) {
+                                    console.log('\n✅ MIGRATION SUCCESSFUL');
+                                    process.exit(0);
+                                } else {
+                                    console.log('\n⚠️ MIGRATION COMPLETED WITH ERRORS');
+                                    process.exit(1);
+                                }
+                            });
+                        }
+                    });
+                }
+            });
+            return;
+        }
+        
+        const statement = statements[index];
         connection.query(statement, (err) => {
             completed++;
             
@@ -77,47 +130,11 @@ connection.connect((err) => {
                 console.log(`✅ Statement ${index + 1}: Success`);
             }
             
-            if (completed === statements.length) {
-                console.log('\n🎉 Migration complete!');
-                console.log('✅ Successful statements:', completed - errors);
-                console.log('❌ Failed statements:', errors);
-                
-                // Verify tables were created
-                connection.query('SHOW TABLES', (err, results) => {
-                    if (err) {
-                        console.error('❌ Failed to verify tables:', err.message);
-                    } else {
-                        console.log('📋 Final tables:', results.map(r => Object.values(r)[0]).join(', '));
-                        
-                        // Verify data in users table
-                        connection.query('SELECT COUNT(*) as count FROM users', (err, results) => {
-                            if (err) {
-                                console.error('❌ Failed to count users:', err.message);
-                            } else {
-                                console.log('👥 Users in database:', results[0].count);
-                                
-                                // Verify data in leave_requests table
-                                connection.query('SELECT COUNT(*) as count FROM leave_requests', (err, results) => {
-                                    if (err) {
-                                        console.error('❌ Failed to count leave requests:', err.message);
-                                    } else {
-                                        console.log('📝 Leave requests in database:', results[0].count);
-                                    }
-                                    connection.end();
-                                    
-                                    if (errors === 0) {
-                                        console.log('\n✅ MIGRATION SUCCESSFUL');
-                                        process.exit(0);
-                                    } else {
-                                        console.log('\n⚠️ MIGRATION COMPLETED WITH ERRORS');
-                                        process.exit(1);
-                                    }
-                                });
-                            }
-                        });
-                    }
-                });
-            }
+            // Execute next statement
+            executeNext(index + 1);
         });
-    });
+    }
+    
+    // Start executing statements
+    executeNext(0);
 });
