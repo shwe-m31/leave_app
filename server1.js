@@ -280,6 +280,149 @@ app.get('/api/student-leave-history', (req, res) => {
     });
 });
 
+// Temporary endpoint to inspect Aiven databases (remove after database setup)
+app.get('/api/inspect-databases', async (req, res) => {
+    // Only allow in production environment for security
+    if (process.env.NODE_ENV !== 'production') {
+        return res.status(403).json({ error: 'This endpoint is only available in production' });
+    }
+    
+    const mysql = require('mysql2');
+    const config = {
+        host: process.env.DB_HOST,
+        port: Number(process.env.DB_PORT),
+        user: process.env.DB_USER,
+        password: process.env.DB_PASSWORD,
+        ssl: process.env.DB_SSL === 'true' ? {
+            rejectUnauthorized: false
+        } : undefined,
+        multipleStatements: true
+    };
+    
+    const inspectConnection = mysql.createConnection(config);
+    
+    try {
+        await new Promise((resolve, reject) => {
+            inspectConnection.connect((err) => {
+                if (err) reject(err);
+                else resolve();
+            });
+        });
+        
+        // Show all databases
+        const [databases] = await new Promise((resolve, reject) => {
+            inspectConnection.query('SHOW DATABASES', (err, results) => {
+                if (err) reject(err);
+                else resolve(results);
+            });
+        });
+        
+        const databaseList = databases.map(db => Object.values(db)[0]);
+        
+        // Inspect defaultdb
+        let defaultDbInfo = { tables: [], rowCounts: {} };
+        try {
+            await new Promise((resolve, reject) => {
+                inspectConnection.query('USE defaultdb', (err) => {
+                    if (err) {
+                        defaultDbInfo.error = err.message;
+                        resolve();
+                    } else {
+                        resolve();
+                    }
+                });
+            });
+            
+            if (!defaultDbInfo.error) {
+                const [tables] = await new Promise((resolve, reject) => {
+                    inspectConnection.query('SHOW TABLES', (err, results) => {
+                        if (err) reject(err);
+                        else resolve(results);
+                    });
+                });
+                
+                defaultDbInfo.tables = tables.map(t => Object.values(t)[0]);
+                
+                // Get row counts
+                for (const tableObj of tables) {
+                    const tableName = Object.values(tableObj)[0];
+                    try {
+                        const [countResult] = await new Promise((resolve, reject) => {
+                            inspectConnection.query(`SELECT COUNT(*) as count FROM ${tableName}`, (err, results) => {
+                                if (err) reject(err);
+                                else resolve(results);
+                            });
+                        });
+                        defaultDbInfo.rowCounts[tableName] = countResult[0].count;
+                    } catch (e) {
+                        defaultDbInfo.rowCounts[tableName] = `Error: ${e.message}`;
+                    }
+                }
+            }
+        } catch (e) {
+            defaultDbInfo.error = e.message;
+        }
+        
+        // Inspect leave_db
+        let leaveDbInfo = { tables: [], rowCounts: {} };
+        try {
+            await new Promise((resolve, reject) => {
+                inspectConnection.query('USE leave_db', (err) => {
+                    if (err) {
+                        leaveDbInfo.error = err.message;
+                        resolve();
+                    } else {
+                        resolve();
+                    }
+                });
+            });
+            
+            if (!leaveDbInfo.error) {
+                const [tables] = await new Promise((resolve, reject) => {
+                    inspectConnection.query('SHOW TABLES', (err, results) => {
+                        if (err) reject(err);
+                        else resolve(results);
+                    });
+                });
+                
+                leaveDbInfo.tables = tables.map(t => Object.values(t)[0]);
+                
+                // Get row counts
+                for (const tableObj of tables) {
+                    const tableName = Object.values(tableObj)[0];
+                    try {
+                        const [countResult] = await new Promise((resolve, reject) => {
+                            inspectConnection.query(`SELECT COUNT(*) as count FROM ${tableName}`, (err, results) => {
+                                if (err) reject(err);
+                                else resolve(results);
+                            });
+                        });
+                        leaveDbInfo.rowCounts[tableName] = countResult[0].count;
+                    } catch (e) {
+                        leaveDbInfo.rowCounts[tableName] = `Error: ${e.message}`;
+                    }
+                }
+            }
+        } catch (e) {
+            leaveDbInfo.error = e.message;
+        }
+        
+        inspectConnection.end();
+        
+        res.json({
+            databases: databaseList,
+            defaultdb: defaultDbInfo,
+            leave_db: leaveDbInfo,
+            current_db_name: process.env.DB_NAME
+        });
+        
+    } catch (error) {
+        console.error('Database inspection error:', error.message);
+        inspectConnection.end();
+        res.status(500).json({ error: error.message });
+    }
+});
+
 // Start Server
 const PORT = process.env.PORT || 3001;
 app.listen(PORT, '0.0.0.0', () => {
