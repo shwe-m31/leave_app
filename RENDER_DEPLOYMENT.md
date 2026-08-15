@@ -66,26 +66,18 @@ FRONTEND_URL=https://your-app-name.onrender.com
 
 ## 🗄️ Database Migration
 
-The database migration should be a one-time operation. Since your local network cannot connect to Aiven, use this method:
+The database migration has been completed successfully. The production database now contains:
 
-### Initial Migration via Render Shell (Recommended)
+- **Database**: `defaultdb`
+- **Tables**: `users`, `leave_requests`
+- **Users**: 31 records (1 admin + 30 students)
+- **Leave Requests**: 18 records
 
-1. **Deploy the application first** with current configuration (`npm install` + `npm start`)
-2. **Go to Render Dashboard** → your service → "Shell"
-3. **Run the migration script**:
-   ```bash
-   node migrate-on-deploy.js
-   ```
-4. **Verify migration success** in the output
-5. **The migration will persist** - no need to run again
+The migration was executed automatically during the initial deployment using the `leave_db.sql` file.
 
-### Alternative: Aiven Console
+### Migration Status: ✅ COMPLETE
 
-1. Log in to your Aiven Console
-2. Navigate to your MySQL service
-3. Use the "SQL Editor" or web interface
-4. Copy and paste the contents of `leave_db_aiven.sql`
-5. Execute the SQL commands
+The migration script (`migrate-on-deploy.js`) is available for future use if needed, but it should not be run during normal deployments as it uses `IF NOT EXISTS` and `INSERT IGNORE` to prevent data duplication.
 
 ## 🔍 Troubleshooting
 
