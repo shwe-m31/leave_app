@@ -252,14 +252,84 @@
         }
         #attendanceChart { width: 100% !important; height: 100% !important; }
 
+        /* ── Academic year filter ── */
+        .year-filter {
+            display: flex;
+            justify-content: flex-end;
+            margin-bottom: 20px;
+        }
+        .year-filter-inner {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .year-filter label {
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--text);
+        }
+        .year-filter select {
+            padding: 8px 12px;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            font-size: 14px;
+            font-family: 'Inter', sans-serif;
+            background: #fff;
+            color: var(--text);
+            cursor: pointer;
+        }
+
+        /* ── Responsive table (leave history) ── */
+        @media (max-width: 768px) {
+            .leave-history-table,
+            .leave-history-table thead,
+            .leave-history-table tbody,
+            .leave-history-table th,
+            .leave-history-table td,
+            .leave-history-table tr { display: block; }
+            .leave-history-table thead tr { display: none; }
+            .leave-history-table tbody tr {
+                margin-bottom: 10px;
+                border: 1px solid var(--border);
+                border-radius: 10px;
+                overflow: hidden;
+            }
+            .leave-history-table tbody tr:hover { background: var(--card); }
+            .leave-history-table tbody td {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                gap: 12px;
+                padding: 10px 16px;
+                text-align: right;
+            }
+            .leave-history-table tbody td::before {
+                content: attr(data-label);
+                font-weight: 600;
+                color: var(--muted);
+                font-size: 11px;
+                text-transform: uppercase;
+                letter-spacing: 0.4px;
+                text-align: left;
+                flex-shrink: 0;
+            }
+        }
+
         /* ── Responsive ── */
         @media (max-width: 900px) {
             .main-grid { grid-template-columns: 1fr; }
         }
         @media (max-width: 640px) {
-            .topnav { padding: 0 16px; }
+            .topnav { padding: 0 12px; gap: 8px; flex-wrap: wrap; height: auto; min-height: var(--nav-h); padding-top: 10px; padding-bottom: 10px; }
+            .topnav nav { order: 3; width: 100%; }
+            .topnav-user { font-size: 12px; }
             .page-wrap { padding: 20px 16px 48px; }
+            .page-header { flex-direction: column; align-items: flex-start; }
+            .page-header .btn-primary { width: 100%; justify-content: center; }
             .stats-grid { grid-template-columns: repeat(2, 1fr); }
+            .year-filter { justify-content: stretch; }
+            .year-filter-inner { flex-direction: column; align-items: stretch; width: 100%; }
+            .year-filter select { width: 100%; }
         }
         @media (max-width: 400px) {
             .stats-grid { grid-template-columns: 1fr; }
@@ -350,10 +420,10 @@
         </div>
 
         <!-- Academic Year Filter -->
-        <div style="display: flex; justify-content: flex-end; margin-bottom: 20px;">
-            <div style="display: flex; align-items: center; gap: 10px;">
-                <label for="academicYearFilter" style="font-size: 14px; font-weight: 500; color: var(--text);">Select Academic Year:</label>
-                <select id="academicYearFilter" style="padding: 8px 12px; border: 1px solid var(--border); border-radius: 6px; font-size: 14px; font-family: 'Inter', sans-serif; background: #fff; color: var(--text); cursor: pointer;">
+        <div class="year-filter">
+            <div class="year-filter-inner">
+                <label for="academicYearFilter">Select Academic Year:</label>
+                <select id="academicYearFilter">
                     <option value="2024-2025">2024-2025</option>
                     <option value="2025-2026">2025-2026</option>
                     <option value="2026-2027" selected>2026-2027</option>
@@ -372,7 +442,7 @@
                         <span style="font-size:12px;color:var(--muted);">Academic year specific leave requests</span>
                     </div>
                 </div>
-                <table>
+                <table class="leave-history-table">
                     <thead>
                         <tr>
                             <th>From</th>
@@ -545,6 +615,30 @@
             }
         }
 
+        // Remove duplicate leave entries for the same date range (keeps best status / newest)
+        function dedupeLeaveHistory(data) {
+            const statusPriority = { Approved: 3, Pending: 2, Rejected: 1 };
+            const seen = new Map();
+
+            data.forEach((request) => {
+                const key = `${formatDate(request.from_date)}|${formatDate(request.to_date)}`;
+                const existing = seen.get(key);
+                if (!existing) {
+                    seen.set(key, request);
+                    return;
+                }
+                const existingPriority = statusPriority[existing.status] || 0;
+                const newPriority = statusPriority[request.status] || 0;
+                const existingTime = new Date(existing.created_at || 0).getTime();
+                const newTime = new Date(request.created_at || 0).getTime();
+                if (newPriority > existingPriority || (newPriority === existingPriority && newTime > existingTime)) {
+                    seen.set(key, request);
+                }
+            });
+
+            return Array.from(seen.values());
+        }
+
         // Update the Leave History Table
         function updateLeaveHistoryTable(data) {
             const tableBody = document.getElementById("leaveHistoryBody");
@@ -552,15 +646,16 @@
                 console.error("Table body for leave history not found!");
                 return;
             }
-            console.log("Updating table with data:", data);
+            const uniqueData = dedupeLeaveHistory(data);
+            console.log("Updating table with data:", uniqueData);
             tableBody.innerHTML = "";
 
-            if (data.length === 0) {
+            if (uniqueData.length === 0) {
                 tableBody.innerHTML = "<tr><td colspan='5' style='text-align:center; padding: 20px; color: var(--muted);'>No leave requests found</td></tr>";
                 return;
             }
 
-            data.forEach((request) => {
+            uniqueData.forEach((request) => {
                 const row = document.createElement("tr");
                 
                 // Calculate number of days
@@ -575,11 +670,11 @@
                 else if (statusText.toLowerCase() === 'rejected') statusClass = 'badge-rejected';
                 
                 row.innerHTML = `
-                    <td>${formatDate(request.from_date)}</td>
-                    <td>${formatDate(request.to_date)}</td>
-                    <td>${request.reason}</td>
-                    <td>${daysCount}</td>
-                    <td><span class="badge ${statusClass}">${statusText}</span></td>
+                    <td data-label="From">${formatDate(request.from_date)}</td>
+                    <td data-label="To">${formatDate(request.to_date)}</td>
+                    <td data-label="Reason">${request.reason}</td>
+                    <td data-label="Days">${daysCount}</td>
+                    <td data-label="Status"><span class="badge ${statusClass}">${statusText}</span></td>
                 `;
                 tableBody.appendChild(row);
             });

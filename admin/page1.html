@@ -321,9 +321,59 @@
         .badge-rejected { background: #FEE2E2; color: #7F1D1D; }
         .badge-expired { background: #F3F4F6; color: #6B7280; border: 1px solid #D1D5DB; }
 
+        /* ===== RESPONSIVE TABLE (leave requests) ===== */
+        @media (max-width: 768px) {
+            .leave-requests-table,
+            .leave-requests-table thead,
+            .leave-requests-table tbody,
+            .leave-requests-table th,
+            .leave-requests-table td,
+            .leave-requests-table tr { display: block; }
+            .leave-requests-table thead tr { display: none; }
+            .leave-requests-table tbody tr {
+                margin-bottom: 10px;
+                border: 1px solid var(--border);
+                border-radius: 10px;
+                overflow: hidden;
+            }
+            .leave-requests-table tbody tr:hover { background: var(--card); }
+            .leave-requests-table tbody td {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                gap: 12px;
+                padding: 10px 16px;
+                text-align: right;
+            }
+            .leave-requests-table tbody td::before {
+                content: attr(data-label);
+                font-weight: 600;
+                color: var(--muted);
+                font-size: 11px;
+                text-transform: uppercase;
+                letter-spacing: 0.4px;
+                text-align: left;
+                flex-shrink: 0;
+            }
+            .leave-requests-table tbody td.action-cell {
+                flex-direction: column;
+                align-items: stretch;
+                gap: 6px;
+            }
+            .leave-requests-table tbody td.action-cell::before {
+                margin-bottom: 4px;
+            }
+            .leave-requests-table tbody .approve,
+            .leave-requests-table tbody .reject {
+                width: 100%;
+            }
+        }
+
         /* ===== RESPONSIVE ===== */
         @media (max-width: 768px) {
-            .header { padding: 0 16px; }
+            .header { padding: 0 12px; gap: 8px; flex-wrap: wrap; height: auto; min-height: var(--nav-h); padding-top: 10px; padding-bottom: 10px; }
+            .header nav { order: 3; width: 100%; }
+            .nav-user { font-size: 12px; }
             .container { padding: 20px 16px 48px; }
             .leave-detail-row { grid-template-columns: 1fr; gap: 2px; }
             .buttons { flex-direction: column; }
@@ -417,7 +467,7 @@
                 <span>Fetched live</span>
             </div>
             <div class="leave-request-list">
-                <table>
+                <table class="leave-requests-table">
                     <thead>
                         <tr>
                             <th>Student Name</th>
@@ -501,12 +551,12 @@ function formatDateTime(dateString) {
                     : '<span style="color: var(--muted); font-size: 12px;">No actions available</span>';
 
                 row.innerHTML = `
-                    <td>${request.student_name || ''}</td>
-                    <td>${formatDate(request.from_date)}</td>
-                    <td>${formatDate(request.to_date)}</td>
-                    <td>${request.reason || ''}</td>
-                    <td><span class="badge ${statusClass}">${statusText}</span></td>
-                    <td class="action-cell">
+                    <td data-label="Student Name">${request.student_name || ''}</td>
+                    <td data-label="From Date">${formatDate(request.from_date)}</td>
+                    <td data-label="To Date">${formatDate(request.to_date)}</td>
+                    <td data-label="Reason">${request.reason || ''}</td>
+                    <td data-label="Status"><span class="badge ${statusClass}">${statusText}</span></td>
+                    <td data-label="Actions" class="action-cell">
                         ${buttonsHtml}
                     </td>
                 `;
