@@ -138,9 +138,12 @@ app.get('/api/students', (req, res) => {
         if (err) {
             console.error('Error fetching students:', err.message);
             res.status(500).json({ error: 'Internal server error' });
-        } else {
-            res.json(results);
+            return;
         }
+        
+        // Return students with their current attendance
+        // The academic year attendance can be calculated on-demand using the existing /api/student-attendance-data endpoint
+        res.json(results);
     });
 });
 

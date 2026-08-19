@@ -277,6 +277,7 @@
     </div>
 
     <!-- JavaScript to fetch students from database -->
+    <script src="../config.js"></script>
     <script>
         let allStudents = [];
 
@@ -286,7 +287,8 @@
 
         async function fetchStudents() {
             try {
-                const response = await fetch("http://localhost:3001/api/students");
+                const apiUrl = API_CONFIG.getBaseUrl() + '/api/students';
+                const response = await fetch(apiUrl);
                 if (!response.ok) {
                     throw new Error("Server error: " + response.status);
                 }
