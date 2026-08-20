@@ -24,7 +24,7 @@ console.log('Database:', config.database);
 console.log('SSL:', config.ssl ? 'Enabled' : 'Disabled');
 
 if (!config.host || !config.user || !config.password) {
-    console.error('❌ Missing required environment variables');
+    console.error('Missing required environment variables');
     console.error('Required: DB_HOST, DB_PORT, DB_USER, DB_PASSWORD, DB_NAME');
     process.exit(1);
 }
@@ -33,26 +33,26 @@ const connection = mysql.createConnection(config);
 
 connection.connect((err) => {
     if (err) {
-        console.error('❌ Database connection failed:', err.message);
+        console.error('Database connection failed:', err.message);
         process.exit(1);
     }
     
-    console.log('✅ Successfully connected to database');
+    console.log('Successfully connected to database');
     
     // Read the SQL file
     const sqlFile = path.join(__dirname, 'leave_db.sql');
     
-    console.log('📄 Using SQL file:', sqlFile);
-    console.log('🎯 Target database:', config.database);
+    console.log('Using SQL file:', sqlFile);
+    console.log('Target database:', config.database);
     
     if (!fs.existsSync(sqlFile)) {
-        console.error('❌ SQL file not found:', sqlFile);
+        console.error('SQL file not found:', sqlFile);
         connection.end();
         process.exit(1);
     }
     
     const sql = fs.readFileSync(sqlFile, 'utf8');
-    console.log('📄 Reading SQL file:', sqlFile);
+    console.log('Reading SQL file:', sqlFile);
     
     // Remove USE statement since we're already connected to the database
     const cleanedSql = sql
@@ -62,27 +62,27 @@ connection.connect((err) => {
         .replace(/\/\*[\s\S]*?\*\//g, '') // Remove multi-line comments
         .trim();
     
-    console.log('🔢 Executing SQL script as single query...');
+    console.log('Executing SQL script as single query...');
     
     // Execute the entire SQL as a single query (MySQL supports multiple statements)
     connection.query(cleanedSql, (err) => {
         if (err) {
             // Check if it's a "table already exists" or "duplicate entry" error
             if (err.message.includes('already exists') || err.message.includes('Duplicate entry')) {
-                console.log('⏭️  Migration skipped (tables/data already exist)');
+                console.log('Migration skipped (tables/data already exist)');
             } else {
-                console.error('❌ Migration failed:', err.message);
+                console.error('Migration failed:', err.message);
                 connection.end();
                 process.exit(1);
             }
         } else {
-            console.log('✅ SQL script executed successfully');
+            console.log('SQL script executed successfully');
         }
         
         // Verify tables were created
         connection.query('SHOW TABLES', (err, results) => {
             if (err) {
-                console.error('❌ Failed to verify tables:', err.message);
+                console.error('Failed to verify tables:', err.message);
                 connection.end();
                 process.exit(1);
             } else {
@@ -91,24 +91,24 @@ connection.connect((err) => {
                 // Verify data in users table
                 connection.query('SELECT COUNT(*) as count FROM users', (err, results) => {
                     if (err) {
-                        console.error('❌ Failed to count users:', err.message);
+                        console.error('Failed to count users:', err.message);
                         connection.end();
                         process.exit(1);
                     } else {
-                        console.log('👥 Users in database:', results[0].count);
+                        console.log('Users in database:', results[0].count);
                         
                         // Verify data in leave_requests table
                         connection.query('SELECT COUNT(*) as count FROM leave_requests', (err, results) => {
                             if (err) {
-                                console.error('❌ Failed to count leave requests:', err.message);
+                                console.error('Failed to count leave requests:', err.message);
                                 connection.end();
                                 process.exit(1);
                             } else {
-                                console.log('📝 Leave requests in database:', results[0].count);
+                                console.log('Leave requests in database:', results[0].count);
                             }
                             connection.end();
                             
-                            console.log('\n✅ MIGRATION SUCCESSFUL');
+                            console.log('\n MIGRATION SUCCESSFUL');
                             process.exit(0);
                         });
                     }
