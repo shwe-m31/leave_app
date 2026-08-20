@@ -6,9 +6,12 @@
 </div>
 <div align="center">
 
+## 🛜 Visit the Project
+https://leave-management-system-3znt.onrender.com
 
+## 🔭 Preview
+https://github.com/user-attachments/assets/c8772949-d792-4842-8943-4b63c8ed4745
 
-https://github.com/user-attachments/assets/f1e1fbc4-0d8f-4e63-8b10-8a430962989c
 
 
 <br/>
