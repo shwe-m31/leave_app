@@ -1,21 +1,3 @@
--- ============================================================
---  Leave Management System — Database Setup
---  Database : leave_db
---  Compatible: MySQL 5.7+ / MariaDB 10.3+
---
---  HOW TO USE
---  ----------
---  Option A — MySQL CLI:
---    mysql -u root -p < leave_db.sql
---
---  Option B — phpMyAdmin / XAMPP:
---    1. Open phpMyAdmin
---    2. Click "Import" tab
---    3. Choose this file and click "Go"
---
---  After importing, start the server with:
---    node server1.js
--- ============================================================
 
 -- Create and select database
 CREATE DATABASE IF NOT EXISTS `leave_db`
